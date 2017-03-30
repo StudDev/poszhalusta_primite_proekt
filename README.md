@@ -1,2 +1,2 @@
-# poszhalusta_primite_proekt
-Arch Linux Graphical Package Manager
+# Arch Linux Graphical Package Manager
+
