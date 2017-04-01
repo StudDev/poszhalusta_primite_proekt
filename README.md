@@ -5,3 +5,5 @@
 * [Qt docs](http://doc.qt.io/qt-5/)
 * [Qt wiki](https://wiki.qt.io/Main)
 * [pacman in ArchWiki](https://wiki.archlinux.org/index.php/Pacman)
+* [pacman git](https://git.archlinux.org/pacman.git/about/)
+* [alpm git](https://git.archlinux.org/pacman.git/tree/lib/libalpm)
