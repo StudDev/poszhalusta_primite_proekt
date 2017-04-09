@@ -1,9 +1,17 @@
-# Arch Linux Graphical Package Manager
+# Yandex Disk Sync Tool
 
 ## Links
-* [pacman git repo](https://git.archlinux.org/pacman.git/ "pacman git repo")
 * [Qt docs](http://doc.qt.io/qt-5/)
 * [Qt wiki](https://wiki.qt.io/Main)
-* [pacman in ArchWiki](https://wiki.archlinux.org/index.php/Pacman)
-* [pacman git](https://git.archlinux.org/pacman.git/about/)
-* [alpm git](https://git.archlinux.org/pacman.git/tree/lib/libalpm)
+* [Yandex Disk REST API](https://tech.yandex.ru/disk/rest/)
+* [Yandex Disk XMPP](https://tech.yandex.ru/disk/doc/dg/concepts/xmpp_xmpp-connection-docpage/)
+## Qt stuff
+* [Qt Quick + Cmake](http://doc.qt.io/QtQuickCompiler/qquickcompiler-building-with-cmake.html)
+* [XML](http://doc.qt.io/qt-5/qtxml-module.html)
+* [Networking] (http://doc.qt.io/qt-5/topics-network-connectivity.html)
+* [Signals/Slots] (https://woboq.com/blog/how-qt-signals-slots-work.html)
+
+
+
+
+
