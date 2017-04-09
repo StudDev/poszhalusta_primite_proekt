@@ -8,8 +8,8 @@
 ## Qt stuff
 * [Qt Quick + Cmake](http://doc.qt.io/QtQuickCompiler/qquickcompiler-building-with-cmake.html)
 * [XML](http://doc.qt.io/qt-5/qtxml-module.html)
-* [Networking] (http://doc.qt.io/qt-5/topics-network-connectivity.html)
-* [Signals/Slots] (https://woboq.com/blog/how-qt-signals-slots-work.html)
+* [Networking](http://doc.qt.io/qt-5/topics-network-connectivity.html)
+* [Signals/Slots](https://woboq.com/blog/how-qt-signals-slots-work.html)
 
 
 
