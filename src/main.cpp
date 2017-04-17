@@ -14,9 +14,11 @@ int main(int argc, char *argv[]){
   YaDiskApiService service{ "/etc/yds/yds_config.json" };
   QThread thread;
   worker->moveToThread(&thread);
-  connect(&thread, &QThread::finished, worker, &QObject::deleteLater);
+  QObject::connect(&thread, &QThread::finished, worker, &QObject::deleteLater);
   QObject::connect(&service, &YaDiskApiService::requestToken, worker, &NetworkController::processPostRequest);
   thread.start();
   service.getAuthCode();
+  thread.exit();
+  thread.wait();
   return app.exec();
 }

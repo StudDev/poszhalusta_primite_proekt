@@ -14,7 +14,7 @@ void getToken(const QString &auth_code);
 public slots:
   void storeToken(QString token);
 signals:
-  void requestToken(QNetworkRequest *);
+  void requestToken(QNetworkRequest *, QByteArray *request_data);
   void requestAuthCode();
 private:
   const QString _authorization = "https://oauth.yandex.ru/authorize";

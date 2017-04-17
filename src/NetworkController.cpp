@@ -22,8 +22,8 @@ NetworkController::~NetworkController() {
 
 }
 
-void NetworkController::processPostRequest(QNetworkRequest *request, QIODevice *data) {
-  _manager->post(*request, data);
+void NetworkController::processPostRequest(QNetworkRequest *request, QByteArray *data) {
+  _manager->post(*request, *data);
 }
 
 void NetworkController::processGetRequest(QNetworkRequest *request) {

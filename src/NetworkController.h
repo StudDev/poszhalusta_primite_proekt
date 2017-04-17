@@ -13,7 +13,7 @@ public:
   NetworkController(QNetworkAccessManager* manager, QObject *parent = nullptr);
   ~NetworkController();
 public slots:
-  void processPostRequest(QNetworkRequest *request, QIODevice *data);
+  void processPostRequest(QNetworkRequest *request, QByteArray *data);
 
   void processGetRequest(QNetworkRequest *request);
 

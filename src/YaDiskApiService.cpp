@@ -23,9 +23,13 @@ void YaDiskApiService::getToken(const QString &auth_code) {
   token_request->setRawHeader(QByteArray("Host"),QByteArray("oauth.yandex.ru"));
   token_request->setHeader(QNetworkRequest::KnownHeaders::ContentTypeHeader,
                            "application/x-www-form-urlencoded");
-  QByteArray request_data;
-  request_data.append("grant_type=authorization_code");
-  request_data.append("?code=" + auth_code);
+  QByteArray *request_data {new QByteArray};
+  request_data->append("grant_type=authorization_code");
+  request_data->append("?code=" + auth_code);
 
-  emit requestToken(token_request);
+  emit requestToken(token_request, request_data);
+}
+
+void YaDiskApiService::storeToken(QString token) {
+ //TODO: implement it
 }
