@@ -1,24 +1,19 @@
 #include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <src/NetworkController.h>
+#include <QQuickView>
+#include <QQmlContext>
+
 #include "YaDiskApiService.h"
 #include "NetworkController.h"
+#include "MainView.h"
 
 int main(int argc, char *argv[]){
-  QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
   QGuiApplication app(argc, argv);
-  QQmlApplicationEngine engine;
-  engine.load(QUrl(QLatin1String("qrc:/main.qml")));
-  QNetworkAccessManager manager(&app);
-  NetworkController *worker = new NetworkController(&manager);
-  YaDiskApiService service{ "/etc/yds/yds_config.json" };
-  QThread thread;
-  worker->moveToThread(&thread);
-  QObject::connect(&thread, &QThread::finished, worker, &QObject::deleteLater);
-  QObject::connect(&service, &YaDiskApiService::requestToken, worker, &NetworkController::processPostRequest);
-  thread.start();
-  service.getAuthCode();
-  thread.exit();
-  thread.wait();
+  
+  QQuickView view;
+  MainView mainView;
+  view.rootContext()->setContextProperty("mainView", &mainView);
+  view.setSource(QUrl::fromLocalFile("res/main.qml"));
+  view.show();
+
   return app.exec();
 }
