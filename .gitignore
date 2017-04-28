@@ -25,6 +25,7 @@
 *.smod
 *.so
 *build-*
+*moc*.cpp
 /.qmake.cache
 /.qmake.stash
 cmake_install.cmake
@@ -36,6 +37,6 @@ CTestTestfile.cmake
 install_manifest.txt
 Makefile
 Makefile*
-moc_*.cpp
 qrc_*.cpp
 ui_*.h
+yds
