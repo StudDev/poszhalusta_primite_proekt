@@ -1,19 +1,30 @@
 #include <QGuiApplication>
-#include <QQuickView>
+#include <QQmlApplicationEngine>
 #include <QQmlContext>
 
-#include "YaDiskApiService.h"
-#include "NetworkController.h"
-#include "MainView.h"
+#include "PreferencesController.h"
+#include "AuthorizationController.h"
 
 int main(int argc, char *argv[]){
   QGuiApplication app(argc, argv);
   
-  QQuickView view;
-  MainView mainView;
-  view.rootContext()->setContextProperty("mainView", &mainView);
-  view.setSource(QUrl::fromLocalFile("res/main.qml"));
-  view.show();
+  QQmlApplicationEngine engine;
+  
+  
+  bool isAuthorized = false;
+
+  if (isAuthorized) {
+    PreferencesController preferencesController;
+    engine.rootContext()->setContextProperty("controller", &preferencesController);
+
+    engine.load(QUrl(QLatin1String("qrc:/PreferencesView.qml")));
+  } else {
+    AuthorizationController authorizationView;
+    engine.rootContext()->setContextProperty("controller", &authorizationView);
+
+    engine.load(QUrl(QLatin1String("qrc:/AuthorizationView.qml")));
+  }
+  
 
   return app.exec();
 }
