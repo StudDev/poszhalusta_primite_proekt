@@ -17,22 +17,22 @@ RestApiController::~RestApiController() {
   worker_thread.wait();
 }
 
-void RestApiController::sendGetRequest(QObject *reciever,
+void RestApiController::sendGetRequest(QObject *receiver,
                                        const QByteArray &recieve_slot,
                                        QNetworkRequest *request) {
-  emit proxyRequest(reciever,recieve_slot,request,RequestType::GET);
+  emit proxyRequest(receiver,recieve_slot,request,RequestType::GET);
 }
 
-void RestApiController::sendPostRequest(QObject *reciever,
+void RestApiController::sendPostRequest(QObject *receiver,
                                         const QByteArray &recieve_slot,
                                         QNetworkRequest *request,
                                         QByteArray *data) {
-  emit proxyRequest(reciever,recieve_slot,request,RequestType::POST, data);
+  emit proxyRequest(receiver,recieve_slot,request,RequestType::POST, data);
 }
 
-void RestApiController::sendPutRequest(QObject *reciever,
+void RestApiController::sendPutRequest(QObject *receiver,
                                        const QByteArray &recieve_slot,
                                        QNetworkRequest *request,
                                        QByteArray *data) {
-  emit proxyRequest(reciever,recieve_slot,request,RequestType::PUT, data);
+  emit proxyRequest(receiver,recieve_slot,request,RequestType::PUT, data);
 }
