@@ -2,45 +2,22 @@ import QtQuick 2.7
 import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.0
 
-ApplicationWindow {
-    visible: true
-    width: 640
-    height: 480
-    title: qsTr("Hello World")
+Rectangle {
 
-    SwipeView {
-        id: swipeView
-        anchors.fill: parent
-        currentIndex: tabBar.currentIndex
+    width: 600;
+    height: 320;
 
-        Page1 {
-        }
-
-        Page {
-            Label {
-                text: qsTr("Second page")
-                anchors.centerIn: parent
-            }
-        }
-        Page{
-            Label{
-                text:qsTr("third page")
-                anchors.centerIn: parent
-            }
-        }
-      }
-
-    footer: TabBar {
-        id: tabBar
-        currentIndex: swipeView.currentIndex
-        TabButton {
-            text: qsTr("First")
-        }
-        TabButton {
-            text: qsTr("Second")
-        }
-        TabButton {
-            text: qsTr("Third")
-        }
+    TextField {
+        id: text;
     }
+
+    Button {
+        text: "Ok"
+        onClicked: {
+            mainView.log(text.text);
+        }
+        anchors.left: text.right;
+    } 
 }
+
+ 
