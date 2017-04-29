@@ -4,19 +4,23 @@ import QtWebEngine 1.4
 
 ApplicationWindow {
 
-    width: 600;
-    height: 320;
-    visible:true;
+    width: 640
+    height: 720
+    visible: true
+    color: "#f6f6f6"
 
     WebEngineView {
         anchors.fill: parent
-        url: "http://iu3.bmstu.ru"
+        url: "https://oauth.yandex.ru/authorize?response_type=code&client_id=20beb8f54f66490fa4f21b42f7af7145"
     }
 
-    footer:
-        Label {
-            text: "Please grant access."
-        }
+    footer: Label {
+        text: "Please grant access."
+        font.pixelSize: 22
+        horizontalAlignment: Text.AlignHCenter
+        padding: 10
+    }
+  
 }
 
  
