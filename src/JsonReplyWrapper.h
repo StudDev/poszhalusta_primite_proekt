@@ -16,10 +16,11 @@ public:
   QNetworkReply *getReply() const;
   const QJsonObject& getResponse() const;
   void setReply(QNetworkReply *reply);
+  bool isError() const;
 private slots:
   void watchReplyState();
 signals:
-  void finished(const QJsonObject&);
+  void finished();
 private:
   QNetworkReply *_reply;
   QJsonObject _jsonResponse;
