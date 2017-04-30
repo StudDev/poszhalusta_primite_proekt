@@ -18,10 +18,10 @@ public:
 
   QSettings *getConfig() const;
   QNetworkAccessManager *getNetworkManager() const;
-  QNetworkReply *getResourceInfo(const QString &path, const QUrlQuery &params) const;
-  QNetworkReply *getDiskInfo() const;
-  QNetworkReply *getFileList(unsigned limit, const QUrlQuery &params) const;
-  QNetworkReply *getLastUploads(unsigned limit, const QUrlQuery &params) const;
+  JsonReplyWrapper * getResourceInfo(const QString &path, const QUrlQuery &params) const;
+  JsonReplyWrapper * getDiskInfo() const;
+  JsonReplyWrapper * getFileList(unsigned limit, const QUrlQuery &params) const;
+  JsonReplyWrapper * getLastUploads(unsigned limit, const QUrlQuery &params) const;
   JsonReplyWrapper * uploadFile(const QString &path, const QUrlQuery &params) const;
 
   void setConfig(QSettings *config);

@@ -8,7 +8,7 @@ JsonReplyWrapper::JsonReplyWrapper(QObject *parent)
 void JsonReplyWrapper::watchReplyState(){
   QJsonDocument doc = QJsonDocument::fromJson(_reply->readAll());
   _jsonResponse = doc.object();
-  emit finished();
+  emit finished(_jsonResponse);
 }
 
 QNetworkReply *JsonReplyWrapper::getReply() const {
@@ -22,9 +22,15 @@ void JsonReplyWrapper::setReply(QNetworkReply *reply) {
 }
 
 JsonReplyWrapper::~JsonReplyWrapper() {
-
+  _reply->deleteLater();
 }
 
 const QJsonObject &JsonReplyWrapper::getResponse() const {
   return _jsonResponse;
+}
+
+JsonReplyWrapper::JsonReplyWrapper(QNetworkReply *reply, QObject *parent)
+  :_reply{reply}{
+   QObject::connect(_reply,&QNetworkReply::finished,this,&JsonReplyWrapper::watchReplyState);
+  _reply->setParent(this);
 }

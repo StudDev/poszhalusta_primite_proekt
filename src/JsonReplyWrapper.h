@@ -9,7 +9,9 @@
 class JsonReplyWrapper : public QObject {
   Q_OBJECT
 public:
-  JsonReplyWrapper(QObject *parent = nullptr);
+  explicit JsonReplyWrapper(QObject *parent = nullptr);
+
+  explicit JsonReplyWrapper(QNetworkReply *reply, QObject *parent = nullptr);
   ~JsonReplyWrapper();
   QNetworkReply *getReply() const;
   const QJsonObject& getResponse() const;
@@ -17,7 +19,7 @@ public:
 private slots:
   void watchReplyState();
 signals:
-  void finished();
+  void finished(const QJsonObject&);
 private:
   QNetworkReply *_reply;
   QJsonObject _jsonResponse;

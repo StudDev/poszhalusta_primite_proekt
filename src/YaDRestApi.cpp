@@ -23,30 +23,33 @@ QNetworkAccessManager *YaDRestApi::getNetworkManager() const {
   return _network_manager;
 }
 
-QNetworkReply *YaDRestApi::getDiskInfo() const {
+JsonReplyWrapper * YaDRestApi::getDiskInfo() const {
   QNetworkRequest request{_main_url.resolved(QUrl("./disk"))};
   setHeaders(request);
   setAuthHeaders(request);
-  return _network_manager->get(request);
+  auto jsonReplyWrapper = new JsonReplyWrapper(_network_manager->get(request));
+  return jsonReplyWrapper;
 }
 
-QNetworkReply *YaDRestApi::getResourceInfo(const QString &path, const QUrlQuery &params) const{
+JsonReplyWrapper * YaDRestApi::getResourceInfo(const QString &path, const QUrlQuery &params) const{
   auto target_url = _main_url.resolved(QUrl("./disk/resources/"));
   target_url.setQuery(params);
   QNetworkRequest request{target_url};
   setHeaders(request);
   setAuthHeaders(request);
-  return _network_manager->get(request);
+  auto jsonReplyWrapper = new JsonReplyWrapper(_network_manager->get(request));
+  return jsonReplyWrapper;
 }
 
 
-QNetworkReply *YaDRestApi::getFileList(unsigned limit, const QUrlQuery &params) const {
+JsonReplyWrapper* YaDRestApi::getFileList(unsigned limit, const QUrlQuery &params) const {
   auto target_url = _main_url.resolved(QUrl("./disk/resources/files"));
   target_url.setQuery(params);
   QNetworkRequest request(target_url);
   setHeaders(request);
   setAuthHeaders(request);
-  return _network_manager->get(request);
+  auto jsonReplyWrapper = new JsonReplyWrapper(_network_manager->get(request));
+  return jsonReplyWrapper;
 }
 
 void YaDRestApi::setHeaders(QNetworkRequest &request) const{
@@ -73,13 +76,14 @@ void YaDRestApi::setConfig(QSettings *config) {
   _config = config;
 }
 
-QNetworkReply *YaDRestApi::getLastUploads(unsigned limit, const QUrlQuery &params) const {
+JsonReplyWrapper * YaDRestApi::getLastUploads(unsigned limit, const QUrlQuery &params) const {
   auto target_url = _main_url.resolved(QUrl("./disk/resources/"));
   target_url.setQuery(params);
   QNetworkRequest request(target_url);
   setHeaders(request);
   setAuthHeaders(request);
-  return _network_manager->get(request);
+  auto jsonReply = new JsonReplyWrapper(_network_manager->get(request));
+  return jsonReply;
 }
 
 JsonReplyWrapper * YaDRestApi::uploadFile(const QString &path, const QUrlQuery &params) const {
@@ -90,7 +94,7 @@ JsonReplyWrapper * YaDRestApi::uploadFile(const QString &path, const QUrlQuery &
   setAuthHeaders(request);
   QNetworkReply *upload_url_reply = _network_manager->get(request);
   JsonReplyWrapper* handler{new JsonReplyWrapper};
-  QObject::connect(upload_url_reply,&QNetworkReply::finished,[this, &path,handler, upload_url_reply]{
+  QObject::connect(upload_url_reply,&QNetworkReply::finished,[this, &path, handler, upload_url_reply]{
     QJsonDocument doc = QJsonDocument::fromJson(upload_url_reply->readAll());
     QJsonObject obj = doc.object();
     QUrl upload_url = obj["href"].toString();
