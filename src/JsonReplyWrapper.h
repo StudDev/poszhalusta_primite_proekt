@@ -5,22 +5,21 @@
 #include <QtCore/QObject>
 #include <QtNetwork/QNetworkReply>
 #include <QtCore/QJsonObject>
+#include "ReplyWrapper.h"
 
-class JsonReplyWrapper : public QObject {
+class JsonReplyWrapper : public ReplyWrapper {
   Q_OBJECT
 public:
   explicit JsonReplyWrapper(QObject *parent = nullptr);
 
   explicit JsonReplyWrapper(QNetworkReply *reply, QObject *parent = nullptr);
   ~JsonReplyWrapper();
-  QNetworkReply *getReply() const;
   const QJsonObject& getResponse() const;
-  void setReply(QNetworkReply *reply);
-  bool isError() const;
+  bool isError() const override;
 private slots:
-  void watchReplyState();
+  void watchReplyState() override;
 signals:
-  void finished();
+  void jsonReply(const QJsonObject& obj) const;
 private:
   QNetworkReply *_reply;
   QJsonObject _jsonResponse;

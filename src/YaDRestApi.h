@@ -21,8 +21,8 @@ public:
   JsonReplyWrapper * getFileList(unsigned limit, const QUrlQuery &params) const;
   JsonReplyWrapper * getLastUploads(unsigned limit, const QUrlQuery &params) const;
 
-  JsonReplyWrapper * uploadFile(const QString &path, const QUrlQuery &params) const;
-  JsonReplyWrapper * downloadFile(const QUrlQuery &params) const;
+  ReplyWrapper * uploadFile(const QString &path, const QUrlQuery &params) const;
+  ReplyWrapper * downloadFile(const QUrlQuery &params) const;
   JsonReplyWrapper * copyResource(const QUrlQuery &params) const;
   JsonReplyWrapper * moveResource(const QUrlQuery &params) const;
   JsonReplyWrapper * removeResource(const QUrlQuery &params) const;

@@ -51,7 +51,7 @@ void YaDRestApi::setAuthHeaders(QNetworkRequest &request) const {
 }
 
 void YaDRestApi::handleReply(QNetworkReply *reply) {
-  qDebug() << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+  qDebug() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute);
   if (reply->error() != QNetworkReply::NetworkError::NoError) {
     emit replyNetworkError(reply->errorString(), reply->error());
     QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
@@ -77,7 +77,7 @@ JsonReplyWrapper * YaDRestApi::getLastUploads(unsigned limit, const QUrlQuery &p
   return defaultGetRequest(target_url);
 }
 
-JsonReplyWrapper *YaDRestApi::uploadFile(const QString &path, const QUrlQuery &params) const {
+ReplyWrapper * YaDRestApi::uploadFile(const QString &path, const QUrlQuery &params) const {
   if(!QFile::exists(path)){
     QString error_msg{"File not found: "};
     error_msg.append(path);
@@ -90,7 +90,7 @@ JsonReplyWrapper *YaDRestApi::uploadFile(const QString &path, const QUrlQuery &p
   setHeaders(request);
   setAuthHeaders(request);
   QNetworkReply *upload_url_reply = _network_manager->get(request);
-  JsonReplyWrapper *handler{new JsonReplyWrapper};
+  ReplyWrapper *handler{new ReplyWrapper};
   QObject::connect(upload_url_reply, &QNetworkReply::finished, [this, &path, handler, upload_url_reply] {
     if(upload_url_reply->bytesAvailable() == 0){
       upload_url_reply->close();
@@ -110,14 +110,14 @@ JsonReplyWrapper *YaDRestApi::uploadFile(const QString &path, const QUrlQuery &p
   return handler;
 }
 
-JsonReplyWrapper *YaDRestApi::downloadFile(const QUrlQuery &params) const {
+ReplyWrapper * YaDRestApi::downloadFile(const QUrlQuery &params) const {
   auto target_url = _main_url.resolved(QUrl("./disk/resources/download"));
   target_url.setQuery(params);
   QNetworkRequest request(target_url);
   setHeaders(request);
   setAuthHeaders(request);
   QNetworkReply *download_url_reply = _network_manager->get(request);
-  JsonReplyWrapper *handler{new JsonReplyWrapper};
+  ReplyWrapper *handler{new ReplyWrapper};
   QObject::connect(download_url_reply, &QNetworkReply::finished, [this, handler, download_url_reply] {
     if(download_url_reply->bytesAvailable() == 0){
       download_url_reply->close();
