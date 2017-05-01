@@ -6,6 +6,8 @@ JsonReplyWrapper::JsonReplyWrapper(QObject *parent)
 }
 
 void JsonReplyWrapper::watchReplyState(){
+ QJsonDocument doc = QJsonDocument::fromJson( _reply->readAll());
+ _jsonResponse = doc.object();
  emit finished();
 }
 
