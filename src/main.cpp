@@ -1,5 +1,5 @@
 #include <QGuiApplication>
-#include <QQmlApplicationEngine>
+#include <QQuickView>
 #include <QQmlContext>
 
 #include "PreferencesController.h"
@@ -7,24 +7,26 @@
 
 int main(int argc, char *argv[]){
   QGuiApplication app(argc, argv);
+
+  PreferencesController* preferencesController;
+  AuthorizationController* authorizationController;
   
-  QQmlApplicationEngine engine;
-  
-  
-  bool isAuthorized = false;
+  const bool isAuthorized = false;
 
   if (isAuthorized) {
-    PreferencesController preferencesController;
-    engine.rootContext()->setContextProperty("controller", &preferencesController);
-
-    engine.load(QUrl(QLatin1String("qrc:/PreferencesView.qml")));
+    preferencesController = new PreferencesController();
   } else {
-    AuthorizationController authorizationView;
-    engine.rootContext()->setContextProperty("controller", &authorizationView);
+    QNetworkAccessManager networkAccessManager;
+    authorizationController = new AuthorizationController("20beb8f54f66490fa4f21b42f7af7145",
+      networkAccessManager);
 
-    engine.load(QUrl(QLatin1String("qrc:/AuthorizationView.qml")));
+    authorizationController->grant();
   }
-  
 
-  return app.exec();
+  int status = app.exec();
+
+  authorizationController->deleteLater();
+  preferencesController->deleteLater();
+
+  return status;
 }
