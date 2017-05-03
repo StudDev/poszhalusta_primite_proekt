@@ -6,28 +6,28 @@
 #include <QNetworkAccessManager>
 
 class AuthorizationController : public QObject {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    AuthorizationController(const QString& clientIdentifier, QNetworkAccessManager& manager);
+  AuthorizationController(const QString& clientIdentifier,
+                          const QString& clientIdentifierSharedKey,
+                          QObject* parent = nullptr);
+  ~AuthorizationController();
 
-    bool openUrl(const QUrl& url);
-    void grant();
+  bool openUrl(const QUrl& url);
+  void grant();
 
-    QUrl authUrl;
-    bool isExpired();
+  QUrl _auth_url;
+  bool isExpired();
 
 signals:
-    void authenticated();
-        
+  void authenticated();
+
 public slots:
-
-    void log(const QUrl &url);
-
+  void log(const QUrl &url);
 
 private:
-    QQuickView view;
-    QOAuth2AuthorizationCodeFlow oauth2;
-    QNetworkAccessManager& manager;
-    QSettings settings;
+  QQuickView _view;
+  QOAuth2AuthorizationCodeFlow _oauth2;
+  QSettings _settings;
 };

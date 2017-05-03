@@ -1,66 +1,70 @@
 #include "AuthorizationController.h"
 
-#include <QUrlQuery>
 #include <QtWebEngine/qtwebengineglobal.h>
 #include <QQmlContext>
+#include <QUrlQuery>
 
 AuthorizationController::AuthorizationController(const QString& clientIdentifier,
-    QNetworkAccessManager& manager): manager(manager) {
-    QtWebEngine::initialize();
+                        const QString& clientIdentifierSharedKey,
+                        QObject* parent)
+    : QObject(parent) {
 
-    auto replyHandler = new QOAuthHttpServerReplyHandler(9980, this);
-    oauth2.setReplyHandler(replyHandler);
-    oauth2.setAuthorizationUrl(QUrl("https://oauth.yandex.ru/authorize"));
-    oauth2.setAccessTokenUrl(QUrl("https://oauth.yandex.ru/token"));
-    oauth2.setClientIdentifier(clientIdentifier);
-    oauth2.setClientIdentifierSharedKey("45493f2fdac944f994b891995db2a305");
+  QtWebEngine::initialize();
 
-    connect(&oauth2, &QOAuth2AuthorizationCodeFlow::statusChanged,
-        [=](QAbstractOAuth::Status status) {
+  auto reply_handler = new QOAuthHttpServerReplyHandler(9980, this);
+  _oauth2.setReplyHandler(reply_handler);
+  _oauth2.setAuthorizationUrl(QUrl("https://oauth.yandex.ru/authorize"));
+  _oauth2.setAccessTokenUrl(QUrl("https://oauth.yandex.ru/token"));
+  _oauth2.setClientIdentifier(clientIdentifier);
+  _oauth2.setClientIdentifierSharedKey(clientIdentifierSharedKey);
 
-        if (status == QAbstractOAuth::Status::Granted) {
-            settings.setValue("token", oauth2.token());
-            qDebug() << oauth2.token();
-            emit authenticated();
-            view.close();
-        }
+  connect(&_oauth2, &QOAuth2AuthorizationCodeFlow::statusChanged,
+          [this](QAbstractOAuth::Status status) {
 
-    });
+            if (status == QAbstractOAuth::Status::Granted) {
+              _settings.setValue("token", _oauth2.token());
+              qDebug() << _oauth2.token();
+              emit authenticated();
+              _view.close();
+            }
 
-    connect(&oauth2, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser,
-            this, &AuthorizationController::openUrl);
+          });
+
+  connect(&_oauth2, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser,
+      this, &AuthorizationController::openUrl);
 }
 
-bool AuthorizationController::openUrl(const QUrl& url) {
-    authUrl = url;
+AuthorizationController::~AuthorizationController() {}
 
-    view.rootContext()->setContextProperty("controller", this);
-    view.rootContext()->setContextProperty("authUrl", authUrl);
-    const QSize windowSize = QSize(640, 660);
-    view.setMinimumSize(windowSize);
-    view.setMaximumSize(windowSize);
-    view.setSource(QUrl(QLatin1String("qrc:/AuthorizationView.qml")));
-    
-    view.show();
+bool AuthorizationController::openUrl(const QUrl& url) {  _auth_url = url;
 
-    return 1;
+  _view.rootContext()->setContextProperty("controller", this);
+  _view.rootContext()->setContextProperty("authUrl", _auth_url);
+  const QSize window_size = QSize(640, 660);
+  _view.setMinimumSize(window_size);
+  _view.setMaximumSize(window_size);
+  _view.setSource(QUrl(QLatin1String("qrc:/AuthorizationView.qml")));
+
+  _view.show();
+
+  return 1;
 }
 
 void AuthorizationController::grant() {
-    if (settings.allKeys().contains("token")) {
-        oauth2.setToken(settings.value("token").toString());
-    } else {
-        oauth2.grant();
-    }
+  if (_settings.allKeys().contains("token")) {
+    qDebug() << _settings.value("token").toString();
+    _oauth2.setToken(_settings.value("token").toString());
+  } else {
+    _oauth2.grant();
+  }
 }
 
-void AuthorizationController::log(const QUrl &url) {
-    QUrlQuery urQuery(url);
-    if (urQuery.hasQueryItem("code")) {
-        qDebug() << urQuery.queryItemValue("code").toInt();
-    }
+void AuthorizationController::log(const QUrl& url) {
+  QUrlQuery url_query(url);
+  if (url_query.hasQueryItem("code"))
+    qDebug() << url_query.queryItemValue("code").toInt();
 }
 
 bool AuthorizationController::isExpired() {
-    return oauth2.expirationAt() <= QDateTime::currentDateTime();
+  return _oauth2.expirationAt() <= QDateTime::currentDateTime();
 }
