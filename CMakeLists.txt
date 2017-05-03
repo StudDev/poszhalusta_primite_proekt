@@ -16,8 +16,9 @@ find_package(Qt5Gui)
 find_package(Qt5Network)
 find_package(Qt5Core)
 find_package(Qt5NetworkAuth)
+find_package(Qt5WebEngine)
 
 qt5_add_resources(qml_QRC res/qml.qrc)
 
 add_executable(${PROJECT_NAME}  ${qml_QRC} ${SOURCES} ${HEADERS})
-target_link_libraries(${PROJECT_NAME} Qt5::Qml Qt5::Quick Qt5::Core Qt5::Network)
+target_link_libraries(${PROJECT_NAME} Qt5::Qml Qt5::Quick Qt5::Core Qt5::Network Qt5::NetworkAuth Qt5::WebEngine)

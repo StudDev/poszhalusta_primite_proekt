@@ -2,11 +2,9 @@ import QtQuick 2.7
 import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.3
 
-ApplicationWindow {
-
-    width: 600;
-    height: 320;
-    visible:true;
+Page {
+    anchors.fill: parent
+    property int margin: 11
 
     header: TabBar {
         id: bar
@@ -23,31 +21,46 @@ ApplicationWindow {
         }
     }
 
-
     StackLayout {
-        width: parent.width
+        anchors.fill: parent
+        //width: parent.width
         currentIndex: bar.currentIndex
 
         Item {
             id: generalTab
 
-            TextField {
-                id: text;
+            ColumnLayout {
+                anchors.margins: margin
+
+                Rectangle {
+                    anchors.margins: margin
+                    color: "#777777"
+
+                    TextField {
+                        id: text;
+                    }
+
+                    Button {
+                        anchors.left: text.right
+                        text: "Ok"
+                        onClicked: {
+                            controller.log(text.text);
+                        }
+                    }
+                }
+
             }
 
-            Button {
-                text: "Ok"
-                onClicked: {
-                    controller.log(text.text);
-                }
-            }
         }
+
         Item {
             id: filesTab
         }
+
         Item {
             id: otherTab
         }
+
     }
 }
 

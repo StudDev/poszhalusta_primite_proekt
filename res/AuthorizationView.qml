@@ -1,17 +1,19 @@
 import QtQuick 2.7
 import QtQuick.Controls 2.0
+import QtQuick.Layouts 1.3
 import QtWebEngine 1.4
 
-ApplicationWindow {
-
-    width: 640
-    height: 720
-    visible: true
-    color: "#f6f6f6"
+Page {
+    anchors.fill: parent
 
     WebEngineView {
+        id: webView
         anchors.fill: parent
-        url: "https://oauth.yandex.ru/authorize?response_type=code&client_id=20beb8f54f66490fa4f21b42f7af7145"
+        url: authUrl
+        
+        // onLoadingChanged: {
+        //     controller.log(url);
+        // }
     }
 
     footer: Label {
@@ -22,5 +24,3 @@ ApplicationWindow {
     }
   
 }
-
- 
