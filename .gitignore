@@ -36,7 +36,7 @@ CMakeLists.txt.user
 CMakeScripts
 CTestTestfile.cmake
 install_manifest.txt
-main.cpp
+*/main.cpp
 Makefile
 Makefile*
 qrc_*.cpp
