@@ -1,3 +1,4 @@
+.idea
 *.a
 *.app
 *.autosave
@@ -38,5 +39,6 @@ install_manifest.txt
 Makefile
 Makefile*
 qrc_*.cpp
+src/main.cpp
 ui_*.h
 yds

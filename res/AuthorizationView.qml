@@ -1,22 +1,26 @@
 import QtQuick 2.7
 import QtQuick.Controls 2.0
+import QtQuick.Layouts 1.3
 import QtWebEngine 1.4
 
-ApplicationWindow {
-
-    width: 600;
-    height: 320;
-    visible:true;
+Page {
+    anchors.fill: parent
 
     WebEngineView {
+        id: webView
         anchors.fill: parent
-        url: "http://iu3.bmstu.ru"
+        url: authUrl
+        
+        // onLoadingChanged: {
+        //     controller.log(url);
+        // }
     }
 
-    footer:
-        Label {
-            text: "Please grant access."
-        }
+    footer: Label {
+        text: "Please grant access."
+        font.pixelSize: 22
+        horizontalAlignment: Text.AlignHCenter
+        padding: 10
+    }
+  
 }
-
- 
