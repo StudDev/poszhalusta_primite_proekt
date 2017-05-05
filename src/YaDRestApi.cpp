@@ -14,6 +14,7 @@ YaDRestApi::YaDRestApi(QNetworkAccessManager *network_access, QObject *parent = 
 
 YaDRestApi::YaDRestApi(QObject *parent)
   : YaDRestApi{new QNetworkAccessManager(this), parent} {
+  _network_manager->setParent(this);
 }
 
 QSettings *YaDRestApi::getConfig() const {
@@ -35,7 +36,7 @@ JsonReplyWrapper *YaDRestApi::getResourceInfo(const QString &path, const QUrlQue
   return defaultGetRequest(target_url);
 }
 
-JsonReplyWrapper *YaDRestApi::getFileList(unsigned limit, const QUrlQuery &params) const {
+JsonReplyWrapper *YaDRestApi::getFileList(const QUrlQuery &params) const {
   auto target_url = _main_url.resolved(QUrl("./disk/resources/files"));
   target_url.setQuery(params);
   return defaultGetRequest(target_url);
@@ -54,10 +55,12 @@ void YaDRestApi::handleReply(QNetworkReply *reply) {
   qDebug() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute);
   if (reply->error() != QNetworkReply::NetworkError::NoError) {
     emit replyNetworkError(reply->errorString(), reply->error());
-    QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
-    QJsonObject obj = doc.object();
-    if(!obj["error"].isNull()){
-      emit replyApiError(obj);
+    if(reply->bytesAvailable() != 0) {
+      QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
+      QJsonObject obj = doc.object();
+      if (!obj["error"].isNull()) {
+        emit replyApiError(obj);
+      }
     }
   }
   return;
@@ -71,7 +74,7 @@ void YaDRestApi::setConfig(QSettings *config) {
   _config = config;
 }
 
-JsonReplyWrapper * YaDRestApi::getLastUploads(unsigned limit, const QUrlQuery &params) const {
+JsonReplyWrapper * YaDRestApi::getLastUploads(const QUrlQuery &params) const {
   auto target_url = _main_url.resolved(QUrl("./disk/resources/"));
   target_url.setQuery(params);
   return defaultGetRequest(target_url);
@@ -103,9 +106,15 @@ ReplyWrapper * YaDRestApi::uploadFile(const QString &path, const QUrlQuery &para
     QNetworkRequest upload_request{upload_url};
     QFile *file_to_upload{new QFile(path)};
     file_to_upload->open(QIODevice::ReadOnly);
+    if(!file_to_upload->isOpen()){
+      upload_url_reply->close();
+      handler->setReply(upload_url_reply);
+      return;
+    }
     QNetworkReply *upload_reply = _network_manager->put(upload_request, file_to_upload);
     handler->setReply(upload_reply);
     file_to_upload->setParent(handler);
+    upload_url_reply->deleteLater();
   });
   return handler;
 }
@@ -131,6 +140,7 @@ ReplyWrapper * YaDRestApi::downloadFile(const QUrlQuery &params) const {
     setAuthHeaders(download_request);
     QNetworkReply *download_reply = _network_manager->get(download_request);
     handler->setReply(download_reply);
+    download_url_reply->deleteLater();
   });
   return handler;
 }
@@ -159,8 +169,8 @@ JsonReplyWrapper *YaDRestApi::createFolder(const QUrlQuery &params) const {
   QNetworkRequest request(target_url);
   setHeaders(request);
   setAuthHeaders(request);
-  auto jsonReplyWrapper = new JsonReplyWrapper(_network_manager->put(request,""));
-  return jsonReplyWrapper;
+  auto json_reply_wrapper = new JsonReplyWrapper(_network_manager->put(request,""));
+  return json_reply_wrapper;
 }
 
 JsonReplyWrapper *YaDRestApi::getOperationStatus(const QUrl &operation_url) const {
@@ -170,22 +180,28 @@ JsonReplyWrapper *YaDRestApi::getOperationStatus(const QUrl &operation_url) cons
 JsonReplyWrapper *YaDRestApi::defaultGetRequest(const QUrl &url) const {
   QNetworkRequest request;
   setDefaultRequestOptions(request, url);
-  auto jsonReplyWrapper = new JsonReplyWrapper(_network_manager->get(request));
-  return jsonReplyWrapper;
+  auto json_reply_wrapper = new JsonReplyWrapper(_network_manager->get(request));
+  return json_reply_wrapper;
 }
 
 JsonReplyWrapper *YaDRestApi::defaultPostRequest(const QUrl &url) const {
   QNetworkRequest request;
   setDefaultRequestOptions(request, url);
-  auto jsonReplyWrapper = new JsonReplyWrapper(_network_manager->post(request,""));
-  return jsonReplyWrapper;
+  auto json_reply_wrapper = new JsonReplyWrapper(_network_manager->post(request,""));
+  return json_reply_wrapper;
 }
 
+JsonReplyWrapper *YaDRestApi::defaultPutRequest(const QUrl &url) const {
+  QNetworkRequest request;
+  setDefaultRequestOptions(request, url);
+  auto json_reply_wrapper = new JsonReplyWrapper(_network_manager->put(request,""));
+  return json_reply_wrapper;
+}
 JsonReplyWrapper *YaDRestApi::defaultDeleteRequest(const QUrl &url) const {
   QNetworkRequest request;
   setDefaultRequestOptions(request, url);
-  auto jsonReplyWrapper = new JsonReplyWrapper(_network_manager->deleteResource(request));
-  return jsonReplyWrapper;
+  auto json_reply_wrapper = new JsonReplyWrapper(_network_manager->deleteResource(request));
+  return json_reply_wrapper;
 }
 
 void YaDRestApi::setDefaultRequestOptions(QNetworkRequest &request, const QUrl &url) const {
@@ -193,5 +209,18 @@ void YaDRestApi::setDefaultRequestOptions(QNetworkRequest &request, const QUrl &
   setAuthHeaders(request);
   request.setUrl(url);
 }
+
+JsonReplyWrapper *YaDRestApi::cleanTrash(const QUrlQuery &params) const {
+  auto target_url = _main_url.resolved(QUrl{"./trash/resources"});
+  target_url.setQuery(params);
+  return defaultDeleteRequest(target_url);
+}
+
+JsonReplyWrapper *YaDRestApi::restoreFromTrash(const QUrlQuery &params) const {
+  auto target_url = _main_url.resolved(QUrl{"./trash/resources/restore"});
+  target_url.setQuery(params);
+  return defaultPutRequest(target_url);
+}
+
 
 
