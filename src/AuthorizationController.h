@@ -11,6 +11,7 @@ class AuthorizationController : public QObject {
 public:
   AuthorizationController(const QString& clientIdentifier,
                           const QString& clientIdentifierSharedKey,
+                          QNetworkAccessManager *manager,
                           QObject* parent = nullptr);
   ~AuthorizationController();
 
@@ -28,6 +29,6 @@ public slots:
 
 private:
   QQuickView _view;
-  QOAuth2AuthorizationCodeFlow _oauth2;
+  QOAuth2AuthorizationCodeFlow* _oauth2;
   QSettings _settings;
 };

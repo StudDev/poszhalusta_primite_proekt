@@ -23,7 +23,6 @@ Page {
 
     StackLayout {
         anchors.fill: parent
-        //width: parent.width
         currentIndex: bar.currentIndex
 
         Item {
@@ -48,9 +47,7 @@ Page {
                         }
                     }
                 }
-
             }
-
         }
 
         Item {
