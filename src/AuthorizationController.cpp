@@ -60,6 +60,10 @@ void AuthorizationController::grant() {
   }
 }
 
+QOAuth2AuthorizationCodeFlow* AuthorizationController::getOAuth2AuthorizationCodeFlow() const {
+  return _oauth2;
+}
+
 void AuthorizationController::log(const QUrl& url) {
   QUrlQuery url_query(url);
   if (url_query.hasQueryItem("code"))
