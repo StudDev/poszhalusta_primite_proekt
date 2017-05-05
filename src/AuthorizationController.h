@@ -17,6 +17,7 @@ public:
 
   bool openUrl(const QUrl& url);
   void grant();
+  QOAuth2AuthorizationCodeFlow* getOAuth2AuthorizationCodeFlow() const;
 
   QUrl _auth_url;
   bool isExpired();
