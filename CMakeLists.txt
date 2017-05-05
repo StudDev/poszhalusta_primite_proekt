@@ -5,9 +5,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 file(GLOB SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-
 file(GLOB HEADERS ${PROJECT_SOURCE_DIR}/src/*.h)
 find_package(Qt5Core CONFIG REQUIRED Qml Quick Gui Network Core)
 find_package(Qt5Quick)
