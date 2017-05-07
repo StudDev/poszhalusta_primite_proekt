@@ -3,43 +3,40 @@
 #include "YaDRestApi.h"
 
 YaDRestApi::YaDRestApi(QNetworkAccessManager *network_access, QObject *parent = nullptr)
-  : QObject(parent),
+  : RestApiBase(network_access,parent),
     _accept{"application/json"},
     _content_type{"application/json"},
     _main_url{"https://cloud-api.yandex.net:443/v1/"},
-    _network_manager(network_access),
     _config{nullptr} {
-  parent->connect(_network_manager, &QNetworkAccessManager::finished, this, &YaDRestApi::handleReply);
+
 }
 
 YaDRestApi::YaDRestApi(QObject *parent)
-  : YaDRestApi{new QNetworkAccessManager(this), parent} {
-  _network_manager->setParent(this);
+  : RestApiBase{new QNetworkAccessManager, parent},
+    _accept{"application/json"},
+    _content_type{"application/json"},
+    _main_url{"https://cloud-api.yandex.net:443/v1/"},
+    _config{nullptr} {
+
 }
 
 QSettings *YaDRestApi::getConfig() const {
   return _config;
 }
 
-QNetworkAccessManager *YaDRestApi::getNetworkManager() const {
-  return _network_manager;
-}
-
-JsonReplyWrapper *YaDRestApi::getDiskInfo() const {
+JsonReplyWrapper *YaDRestApi::getDiskInfo(){
   auto target_url = _main_url.resolved(QUrl{"./disk"});
-  return defaultGetRequest(target_url);
+  return new JsonReplyWrapper{ get(target_url) };
 }
 
-JsonReplyWrapper *YaDRestApi::getResourceInfo(const QString &path, const QUrlQuery &params) const {
+JsonReplyWrapper *YaDRestApi::getResourceInfo(const QString &path, const QUrlQuery &params) {
   auto target_url = _main_url.resolved(QUrl("./disk/resources/"));
-  target_url.setQuery(params);
-  return defaultGetRequest(target_url);
+   return new JsonReplyWrapper{ get(target_url,params)};
 }
 
-JsonReplyWrapper *YaDRestApi::getFileList(const QUrlQuery &params) const {
-  auto target_url = _main_url.resolved(QUrl("./disk/resources/files"));
-  target_url.setQuery(params);
-  return defaultGetRequest(target_url);
+JsonReplyWrapper *YaDRestApi::getFileList(const QUrlQuery &params) {
+  auto target_url = _main_url.resolved(QUrl("./disk/resources/"));
+  return new JsonReplyWrapper{ get(target_url,params) };
 }
 
 void YaDRestApi::setHeaders(QNetworkRequest &request) const {
@@ -48,39 +45,23 @@ void YaDRestApi::setHeaders(QNetworkRequest &request) const {
 }
 
 void YaDRestApi::setAuthHeaders(QNetworkRequest &request) const {
-  request.setRawHeader("Authorization", _config->value("token/token").toByteArray());
-}
-
-void YaDRestApi::handleReply(QNetworkReply *reply) {
-  qDebug() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute);
-  if (reply->error() != QNetworkReply::NetworkError::NoError) {
-    emit replyNetworkError(reply->errorString(), reply->error());
-    if (reply->bytesAvailable() != 0) {
-      QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
-      QJsonObject obj = doc.object();
-      if (!obj["error"].isNull()) {
-        emit replyApiError(obj);
-      }
-    }
-  }
-  return;
+  request.setRawHeader("Authorization",token().toLocal8Bit());
 }
 
 YaDRestApi::~YaDRestApi() {
-  _network_manager->deleteLater();
+
 }
 
 void YaDRestApi::setConfig(QSettings *config) {
   _config = config;
 }
 
-JsonReplyWrapper *YaDRestApi::getLastUploads(const QUrlQuery &params) const {
+JsonReplyWrapper *YaDRestApi::getLastUploads(const QUrlQuery &params) {
   auto target_url = _main_url.resolved(QUrl("./disk/resources/"));
-  target_url.setQuery(params);
-  return defaultGetRequest(target_url);
+  return new JsonReplyWrapper{ get(target_url,params) };
 }
 
-ReplyWrapper *YaDRestApi::uploadFile(const QString &path, const QUrlQuery &params) const {
+ReplyWrapper *YaDRestApi::uploadFile(const QString &path, const QUrlQuery &params){
   if (!QFile::exists(path)) {
     QString error_msg{"File not found: "};
     error_msg.append(path);
@@ -88,22 +69,16 @@ ReplyWrapper *YaDRestApi::uploadFile(const QString &path, const QUrlQuery &param
     return nullptr;
   }
   auto target_url = _main_url.resolved(QUrl("./disk/resources/upload"));
-  target_url.setQuery(params);
-  QNetworkRequest request(target_url);
-  setHeaders(request);
-  setAuthHeaders(request);
-  QNetworkReply *upload_url_reply = _network_manager->get(request);
+  QNetworkReply *upload_url_reply = get(target_url,params);
   ReplyWrapper *handler{new ReplyWrapper};
-  QObject::connect(upload_url_reply, &QNetworkReply::finished, [this, &path, handler, upload_url_reply] {
+  QObject::connect(upload_url_reply, &QNetworkReply::finished, [this, path, handler, upload_url_reply] {
     if (upload_url_reply->bytesAvailable() == 0) {
       upload_url_reply->close();
-      handler->setReply(upload_url_reply);
       return;
     }
     QJsonDocument doc = QJsonDocument::fromJson(upload_url_reply->readAll());
     QJsonObject obj = doc.object();
     QUrl upload_url = obj["href"].toString();
-    QNetworkRequest upload_request{upload_url};
     QFile *file_to_upload{new QFile(path)};
     file_to_upload->open(QIODevice::ReadOnly);
     if (!file_to_upload->isOpen()) {
@@ -111,7 +86,7 @@ ReplyWrapper *YaDRestApi::uploadFile(const QString &path, const QUrlQuery &param
       handler->setReply(upload_url_reply);
       return;
     }
-    QNetworkReply *upload_reply = _network_manager->put(upload_request, file_to_upload);
+    QNetworkReply *upload_reply = put(upload_url, file_to_upload);
     handler->setReply(upload_reply);
     file_to_upload->setParent(handler);
     upload_url_reply->deleteLater();
@@ -119,13 +94,9 @@ ReplyWrapper *YaDRestApi::uploadFile(const QString &path, const QUrlQuery &param
   return handler;
 }
 
-ReplyWrapper *YaDRestApi::downloadFile(const QUrlQuery &params) const {
+ReplyWrapper *YaDRestApi::downloadFile(const QUrlQuery &params) {
   auto target_url = _main_url.resolved(QUrl("./disk/resources/download"));
-  target_url.setQuery(params);
-  QNetworkRequest request(target_url);
-  setHeaders(request);
-  setAuthHeaders(request);
-  QNetworkReply *download_url_reply = _network_manager->get(request);
+  QNetworkReply *download_url_reply = get(target_url,params);
   ReplyWrapper *handler{new ReplyWrapper};
   QObject::connect(download_url_reply, &QNetworkReply::finished, [this, handler, download_url_reply] {
     if (download_url_reply->bytesAvailable() == 0) {
@@ -136,91 +107,59 @@ ReplyWrapper *YaDRestApi::downloadFile(const QUrlQuery &params) const {
     QJsonDocument doc = QJsonDocument::fromJson(download_url_reply->readAll());
     QJsonObject obj = doc.object();
     QUrl download_url = obj["href"].toString();
-    QNetworkRequest download_request{download_url};
-    setAuthHeaders(download_request);
-    QNetworkReply *download_reply = _network_manager->get(download_request);
+    QNetworkRequest req {download_url};
+    QNetworkReply *download_reply = get(req);
     handler->setReply(download_reply);
     download_url_reply->deleteLater();
   });
   return handler;
 }
 
-JsonReplyWrapper *YaDRestApi::copyResource(const QUrlQuery &params) const {
+JsonReplyWrapper *YaDRestApi::copyResource(const QUrlQuery &params) {
   auto target_url = _main_url.resolved(QUrl("./disk/resources/copy"));
-  target_url.setQuery(params);
-  return defaultPostRequest(target_url);
+  return new JsonReplyWrapper{ post(target_url,"",params) };
 }
 
-JsonReplyWrapper *YaDRestApi::moveResource(const QUrlQuery &params) const {
+JsonReplyWrapper *YaDRestApi::moveResource(const QUrlQuery &params) {
   auto target_url = _main_url.resolved(QUrl("./disk/resources/move"));
-  target_url.setQuery(params);
-  return defaultPostRequest(target_url);
+  return new JsonReplyWrapper{ post(target_url,"",params) };
 }
 
-JsonReplyWrapper *YaDRestApi::removeResource(const QUrlQuery &params) const {
+JsonReplyWrapper *YaDRestApi::removeResource(const QUrlQuery &params) {
   auto target_url = _main_url.resolved(QUrl("./disk/resources"));
-  target_url.setQuery(params);
-  return defaultDeleteRequest(target_url);
+  return new JsonReplyWrapper{ deleteResource(target_url,params) };
 }
 
-JsonReplyWrapper *YaDRestApi::createFolder(const QUrlQuery &params) const {
+JsonReplyWrapper *YaDRestApi::createFolder(const QUrlQuery &params) {
   auto target_url = _main_url.resolved(QUrl("./disk/resources"));
-  target_url.setQuery(params);
-  QNetworkRequest request(target_url);
-  setHeaders(request);
-  setAuthHeaders(request);
-  auto json_reply_wrapper = new JsonReplyWrapper(_network_manager->put(request, ""));
-  return json_reply_wrapper;
+  return new JsonReplyWrapper{ put(target_url,"",params) };
 }
 
-JsonReplyWrapper *YaDRestApi::getOperationStatus(const QUrl &operation_url) const {
-  return defaultGetRequest(operation_url);
+JsonReplyWrapper *YaDRestApi::getOperationStatus(const QUrl &operation_url) {
+  return new JsonReplyWrapper{ get(operation_url) };
 }
 
-JsonReplyWrapper *YaDRestApi::defaultGetRequest(const QUrl &url) const {
-  QNetworkRequest request;
-  setDefaultRequestOptions(request, url);
-  auto json_reply_wrapper = new JsonReplyWrapper(_network_manager->get(request));
-  return json_reply_wrapper;
-}
-
-JsonReplyWrapper *YaDRestApi::defaultPostRequest(const QUrl &url) const {
-  QNetworkRequest request;
-  setDefaultRequestOptions(request, url);
-  auto json_reply_wrapper = new JsonReplyWrapper(_network_manager->post(request, ""));
-  return json_reply_wrapper;
-}
-
-JsonReplyWrapper *YaDRestApi::defaultPutRequest(const QUrl &url) const {
-  QNetworkRequest request;
-  setDefaultRequestOptions(request, url);
-  auto json_reply_wrapper = new JsonReplyWrapper(_network_manager->put(request, ""));
-  return json_reply_wrapper;
-}
-
-JsonReplyWrapper *YaDRestApi::defaultDeleteRequest(const QUrl &url) const {
-  QNetworkRequest request;
-  setDefaultRequestOptions(request, url);
-  auto json_reply_wrapper = new JsonReplyWrapper(_network_manager->deleteResource(request));
-  return json_reply_wrapper;
-}
-
-void YaDRestApi::setDefaultRequestOptions(QNetworkRequest &request, const QUrl &url) const {
-  setHeaders(request);
-  setAuthHeaders(request);
-  request.setUrl(url);
-}
-
-JsonReplyWrapper *YaDRestApi::cleanTrash(const QUrlQuery &params) const {
+JsonReplyWrapper *YaDRestApi::cleanTrash(const QUrlQuery &params) {
   auto target_url = _main_url.resolved(QUrl{"./trash/resources"});
-  target_url.setQuery(params);
-  return defaultDeleteRequest(target_url);
+  return new JsonReplyWrapper{ deleteResource(target_url,params) };
 }
 
-JsonReplyWrapper *YaDRestApi::restoreFromTrash(const QUrlQuery &params) const {
+JsonReplyWrapper *YaDRestApi::restoreFromTrash(const QUrlQuery &params) {
   auto target_url = _main_url.resolved(QUrl{"./trash/resources/restore"});
-  target_url.setQuery(params);
-  return defaultPutRequest(target_url);
+  return new JsonReplyWrapper{ put(target_url,"",params) };
+}
+
+void YaDRestApi::modifyRequest(QNetworkRequest &request) const {
+    setHeaders(request);
+    setAuthHeaders(request);
+}
+
+void YaDRestApi::handleError(QNetworkReply *reply) {
+  QJsonDocument json = QJsonDocument::fromJson(reply->readAll());
+  auto json_obj = json.object();
+  if(json_obj["error"] != ""){
+    emit replyApiError(json_obj);
+  }
 }
 
 

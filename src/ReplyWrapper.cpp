@@ -8,7 +8,7 @@ ReplyWrapper::ReplyWrapper(QObject *parent)
 ReplyWrapper::ReplyWrapper(QNetworkReply *reply, QObject *parent)
   : _reply{reply} {
   QObject::connect(_reply, &QNetworkReply::finished, this, &ReplyWrapper::watchReplyState);
-  _reply->setParent(this);
+
 }
 
 void ReplyWrapper::watchReplyState() {

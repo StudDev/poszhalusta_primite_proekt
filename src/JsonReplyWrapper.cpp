@@ -7,11 +7,12 @@ JsonReplyWrapper::JsonReplyWrapper(QObject *parent)
 
 JsonReplyWrapper::JsonReplyWrapper(QNetworkReply *reply, QObject *parent)
   : ReplyWrapper{reply, parent} {
+
 }
 
 
 void JsonReplyWrapper::watchReplyState() {
-  QJsonDocument doc = QJsonDocument::fromJson(_reply->readAll());
+  QJsonDocument doc = QJsonDocument::fromJson(getReply()->readAll());
   _jsonResponse = doc.object();
   emit finished();
   emit jsonReply(_jsonResponse);
@@ -26,5 +27,5 @@ const QJsonObject &JsonReplyWrapper::getResponse() const {
 }
 
 bool JsonReplyWrapper::isError() const {
-  return _jsonResponse["error"].isNull() || _reply->error();
+  return _jsonResponse["error"].isNull() || getReply()->error();
 }

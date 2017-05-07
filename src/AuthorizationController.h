@@ -28,7 +28,6 @@ public:
 
 signals:
   void authenticated();
-
 public slots:
   void log(const QUrl &url);
 
