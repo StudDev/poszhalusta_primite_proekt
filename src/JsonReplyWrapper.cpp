@@ -2,28 +2,28 @@
 #include "JsonReplyWrapper.h"
 
 JsonReplyWrapper::JsonReplyWrapper(QObject *parent)
-  : ReplyWrapper{parent}{
+  : ReplyWrapper{parent} {
 }
 
 JsonReplyWrapper::JsonReplyWrapper(QNetworkReply *reply, QObject *parent)
-  :ReplyWrapper{reply,parent}{
+  : ReplyWrapper{reply, parent} {
+
 }
-
-
-void JsonReplyWrapper::watchReplyState(){
- QJsonDocument doc = QJsonDocument::fromJson( _reply->readAll());
- _jsonResponse = doc.object();
- emit finished();
- emit jsonReply(_jsonResponse);
-}
-
 JsonReplyWrapper::~JsonReplyWrapper() {
   _reply->deleteLater();
 }
 
-const QJsonObject &JsonReplyWrapper::getResponse() const {
+const QJsonObject &JsonReplyWrapper::getJsonResponse() const {
   return _jsonResponse;
 }
+
 bool JsonReplyWrapper::isError() const {
-  return _jsonResponse["error"].isNull() || _reply->error();
+  return _jsonResponse["error"].isNull() || getReply()->error();
+}
+
+void JsonReplyWrapper::handleFinishedReply() {
+  QJsonDocument doc = QJsonDocument::fromJson(getReply()->readAll());
+  _jsonResponse = doc.object();
+  emit jsonReply(_jsonResponse);
+  _reply->close();
 }

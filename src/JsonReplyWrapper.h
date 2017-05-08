@@ -13,15 +13,14 @@ public:
   explicit JsonReplyWrapper(QObject *parent = nullptr);
 
   explicit JsonReplyWrapper(QNetworkReply *reply, QObject *parent = nullptr);
-  ~JsonReplyWrapper();
-  const QJsonObject& getResponse() const;
+
+  const QJsonObject& getJsonResponse() const;
   bool isError() const override;
-private slots:
-  void watchReplyState() override;
+  void handleFinishedReply() override;
+  ~JsonReplyWrapper();
 signals:
   void jsonReply(const QJsonObject& obj) const;
 private:
-  QNetworkReply *_reply;
   QJsonObject _jsonResponse;
 };
 

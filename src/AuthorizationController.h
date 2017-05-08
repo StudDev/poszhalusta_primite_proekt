@@ -1,18 +1,22 @@
+#ifndef AUTHORIZATION_CONTROLLER_H
+#define AUTHORIZATION_CONTROLLER_H
+
 #include <QObject>
 #include <QDebug>
 #include <QString>
 #include <QQuickView>
 #include <QtNetworkAuth>
 #include <QNetworkAccessManager>
+#include <QtCore/QSettings>
+
 
 class AuthorizationController : public QObject {
   Q_OBJECT
-
 public:
-  AuthorizationController(const QString& clientIdentifier,
-                          const QString& clientIdentifierSharedKey,
-                          QNetworkAccessManager *manager,
-                          QObject* parent = nullptr);
+  AuthorizationController(QObject *parent);
+  AuthorizationController(QNetworkAccessManager *manager, QObject *parent);
+
+  AuthorizationController(QOAuth2AuthorizationCodeFlow *oauth, QObject *parent);
   ~AuthorizationController();
 
   bool openUrl(const QUrl& url);
@@ -24,12 +28,15 @@ public:
 
 signals:
   void authenticated();
-
 public slots:
   void log(const QUrl &url);
 
 private:
+
+  void oauthAutoInit();
   QQuickView _view;
   QOAuth2AuthorizationCodeFlow* _oauth2;
   QSettings _settings;
 };
+
+#endif // AUTHORIZATION_CONTROLLER_H
