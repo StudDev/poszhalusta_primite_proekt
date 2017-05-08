@@ -2,6 +2,8 @@
     <qresource prefix="/">
         <file>PreferencesView.qml</file>
         <file>AuthorizationView.qml</file>
+        <file>TrayIcon.qml</file>
+        <file>icon.png</file>
         <file>qtquickcontrols2.conf</file>
     </qresource>
 </RCC>
