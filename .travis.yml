@@ -5,7 +5,7 @@ before_install:
   - echo "deb http://ru.archive.ubuntu.com/ubuntu/ xenial main" | sudo tee --append /etc/apt/sources.list
   - echo "deb http://ppa.launchpad.net/beineri/opt-qt58-xenial/ubuntu xenial main" | sudo tee --append /etc/apt/sources.list
   - sudo apt-get update -qq
-  - sudo apt-get install qt58base qt58networkauth-no-lgpl qt58webengine qt58quickcontrols2 -y
+  - sudo apt-get install qt58base qt58networkauth-no-lgpl qt58webengine qt58quickcontrols2 -y --allow-unauthenticated
   - /opt/qt58/bin/qt58-env.sh
 script:
   echo "int main(){}" >> src/main.cpp && cmake . && cmake --build .
