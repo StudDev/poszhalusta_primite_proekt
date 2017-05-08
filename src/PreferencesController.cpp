@@ -16,7 +16,6 @@ PreferencesController::PreferencesController(QObject* parent)
   
 
   _view.rootContext()->setContextProperty("controller", this);
-  _view.rootContext()->setContextProperty("view", &_view);
 
   const QSize windowSize = QSize(640, 480);
   _view.setMinimumSize(windowSize);
