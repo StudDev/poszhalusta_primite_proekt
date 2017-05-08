@@ -2,21 +2,22 @@
 #include <QtNetwork/QNetworkReply>
 #include "YaDRestApi.h"
 
-YaDRestApi::YaDRestApi(QNetworkAccessManager *network_access, QObject *parent = nullptr)
-  : RestApiBase(network_access,parent),
-    _accept{"application/json"},
-    _content_type{"application/json"},
-    _main_url{"https://cloud-api.yandex.net:443/v1/"},
-    _config{nullptr} {
+namespace {
+  const char * const ACCEPT{"application/json"};
+  const char * const CONTENT_TYPE{"application/json"};
+  const char * const MAIN_URL{"https://cloud-api.yandex.net:443/v1/"};
+}
 
+YaDRestApi::YaDRestApi(QNetworkAccessManager *network_access, QObject *parent)
+  :RestApiBase(network_access,parent),
+    _accept{ACCEPT},
+    _content_type{CONTENT_TYPE},
+    _main_url{MAIN_URL},
+    _config{nullptr} {
 }
 
 YaDRestApi::YaDRestApi(QObject *parent)
-  : RestApiBase{new QNetworkAccessManager, parent},
-    _accept{"application/json"},
-    _content_type{"application/json"},
-    _main_url{"https://cloud-api.yandex.net:443/v1/"},
-    _config{nullptr} {
+  : YaDRestApi{new QNetworkAccessManager, parent}{
 
 }
 
@@ -154,7 +155,7 @@ void YaDRestApi::modifyRequest(QNetworkRequest &request) const {
     setAuthHeaders(request);
 }
 
-void YaDRestApi::handleError(QNetworkReply *reply) {
+void YaDRestApi::handleError(QNetworkReply *reply) const{
   QJsonDocument json = QJsonDocument::fromJson(reply->readAll());
   auto json_obj = json.object();
   if(json_obj["error"] != ""){

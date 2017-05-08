@@ -32,6 +32,7 @@ public slots:
   void log(const QUrl &url);
 
 private:
+
   void oauthAutoInit();
   QQuickView _view;
   QOAuth2AuthorizationCodeFlow* _oauth2;

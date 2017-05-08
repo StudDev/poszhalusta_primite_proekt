@@ -17,7 +17,7 @@ public:
 
   explicit YaDRestApi(QObject *parent = nullptr);
 
-  YaDRestApi(QNetworkAccessManager *network_access, QObject *parent);
+  YaDRestApi(QNetworkAccessManager *network_access, QObject *parent = nullptr);
 
   QSettings *getConfig() const;
 
@@ -45,7 +45,6 @@ public:
 
   JsonReplyWrapper *restoreFromTrash(const QUrlQuery &params);
 
-
   JsonReplyWrapper *getOperationStatus(const QUrl &operation_url);
 
   void setConfig(QSettings *config);
@@ -54,13 +53,10 @@ public:
 
 protected:
   void modifyRequest(QNetworkRequest &request) const override;
-  void handleError(QNetworkReply *reply) override;
-public slots:
+  void handleError(QNetworkReply *reply) const override;
 
 signals:
-  void replyApiError(const QJsonObject &error);
-
-  void error(const QString &error_msg) const;
+  void replyApiError(const QJsonObject &error) const;
 
 private:
   void setHeaders(QNetworkRequest &request) const;

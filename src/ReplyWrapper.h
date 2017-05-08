@@ -18,16 +18,15 @@ public:
 
   virtual bool isError() const;
 
+  virtual void handleFinishedReply();
+
   virtual ~ReplyWrapper();
 
 signals:
 
   void finished() const;
-
 protected slots:
-
-  virtual void watchReplyState();
-
+  void watchReplyState();
 protected:
   QNetworkReply *_reply;
 };

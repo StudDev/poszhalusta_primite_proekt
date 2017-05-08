@@ -13,6 +13,7 @@ ReplyWrapper::ReplyWrapper(QNetworkReply *reply, QObject *parent)
 
 void ReplyWrapper::watchReplyState() {
   emit finished();
+  handleFinishedReply();
 }
 
 QNetworkReply *ReplyWrapper::getReply() const {
@@ -31,4 +32,8 @@ ReplyWrapper::~ReplyWrapper() {
 
 bool ReplyWrapper::isError() const {
   return _reply->error() != QNetworkReply::NoError;
+}
+
+void ReplyWrapper::handleFinishedReply() {
+  return;
 }

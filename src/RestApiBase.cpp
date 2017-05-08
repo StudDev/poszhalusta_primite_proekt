@@ -86,7 +86,7 @@ void RestApiBase::handleReply(QNetworkReply * reply) {
   return;
 }
 
-void RestApiBase::handleError(QNetworkReply *reply) {
+void RestApiBase::handleError(QNetworkReply *reply) const {
   return;
 }
 
