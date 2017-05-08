@@ -13,10 +13,10 @@
 class AuthorizationController : public QObject {
   Q_OBJECT
 public:
-  AuthorizationController(QObject *parent);
-  AuthorizationController(QNetworkAccessManager *manager, QObject *parent);
+  AuthorizationController(QObject *parent = nullptr);
+  AuthorizationController(QNetworkAccessManager *manager, QObject *parent = nullptr);
 
-  AuthorizationController(QOAuth2AuthorizationCodeFlow *oauth, QObject *parent);
+  AuthorizationController(QOAuth2AuthorizationCodeFlow *oauth, QObject *parent = nullptr);
   ~AuthorizationController();
 
   bool openUrl(const QUrl& url);

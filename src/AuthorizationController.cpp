@@ -14,7 +14,7 @@ namespace {
 
 }
 
-AuthorizationController::AuthorizationController(QNetworkAccessManager *manager, QObject *parent = nullptr)
+AuthorizationController::AuthorizationController(QNetworkAccessManager *manager, QObject *parent)
   : QObject(parent),
     _oauth2(new QOAuth2AuthorizationCodeFlow(manager, this)) {
   oauthAutoInit();
@@ -64,12 +64,12 @@ bool AuthorizationController::isExpired() {
   return _oauth2->expirationAt() <= QDateTime::currentDateTime();
 }
 
-AuthorizationController::AuthorizationController(QObject *parent = nullptr)
+AuthorizationController::AuthorizationController(QObject *parent)
   :AuthorizationController{new QNetworkAccessManager(this),parent}{
 
 }
 
-AuthorizationController::AuthorizationController(QOAuth2AuthorizationCodeFlow *oauth, QObject *parent = nullptr)
+AuthorizationController::AuthorizationController(QOAuth2AuthorizationCodeFlow *oauth, QObject *parent)
   :QObject(parent), _oauth2(oauth){
   oauthAutoInit();
   QtWebEngine::initialize();

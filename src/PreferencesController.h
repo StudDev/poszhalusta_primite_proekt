@@ -2,6 +2,7 @@
 #include <QQuickView>
 #include <QString>
 #include <QSettings>
+#include <QtCore/QDir>
 
 class PreferencesController : public QObject {
   Q_OBJECT
@@ -13,7 +14,7 @@ class PreferencesController : public QObject {
   static void recursiveAddFolder(QStringList& foldersList, const QString& rootFolder);
 
   Q_INVOKABLE QString getRootPath() const { return _root_path; }
-  QSettings* getSettings() const { return _settings; }
+  QSettings* getSettings() { return &_settings; }
 
  public slots:
   void log(const QString& msg) const { qDebug() << msg; }
