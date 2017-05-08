@@ -19,5 +19,5 @@ find_package(Qt5WebEngine)
 
 qt5_add_resources(qml_QRC res/qml.qrc)
 
-add_executable(${PROJECT_NAME}  ${qml_QRC} ${SOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME}  ${qml_QRC} ${SOURCES} ${HEADERS} src/FileWatch.cpp src/FileWatch.h)
 target_link_libraries(${PROJECT_NAME} Qt5::Qml Qt5::Quick Qt5::Core Qt5::Network Qt5::NetworkAuth Qt5::WebEngine)
