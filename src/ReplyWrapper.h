@@ -14,7 +14,7 @@ public:
 
   QNetworkReply *getReply() const;
 
-  void setReply(QNetworkReply *reply);
+  virtual void setReply(QNetworkReply *reply);
 
   virtual bool isError() const;
 

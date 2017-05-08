@@ -25,4 +25,5 @@ void JsonReplyWrapper::handleFinishedReply() {
   QJsonDocument doc = QJsonDocument::fromJson(getReply()->readAll());
   _jsonResponse = doc.object();
   emit jsonReply(_jsonResponse);
+  _reply->close();
 }

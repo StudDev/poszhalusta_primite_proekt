@@ -12,8 +12,8 @@ ReplyWrapper::ReplyWrapper(QNetworkReply *reply, QObject *parent)
 }
 
 void ReplyWrapper::watchReplyState() {
-  emit finished();
   handleFinishedReply();
+  emit finished();
 }
 
 QNetworkReply *ReplyWrapper::getReply() const {
@@ -22,8 +22,8 @@ QNetworkReply *ReplyWrapper::getReply() const {
 
 void ReplyWrapper::setReply(QNetworkReply *reply) {
   _reply = reply;
-  QObject::connect(_reply, &QNetworkReply::finished, this, &ReplyWrapper::watchReplyState);
   _reply->setParent(this);
+  QObject::connect(_reply, &QNetworkReply::readyRead, this, &ReplyWrapper::watchReplyState);
 }
 
 ReplyWrapper::~ReplyWrapper() {

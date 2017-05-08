@@ -31,7 +31,7 @@ public:
 
   ReplyWrapper *uploadFile(const QString &path, const QUrlQuery &params);
 
-  ReplyWrapper *downloadFile(const QUrlQuery &params);
+  ReplyWrapper *downloadFile(const QString &localpath, const QUrlQuery &params);
 
   JsonReplyWrapper *copyResource(const QUrlQuery &params);
 

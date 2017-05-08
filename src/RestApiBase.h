@@ -12,7 +12,6 @@ class RestApiBase: public QObject {
 public:
   RestApiBase(QNetworkAccessManager *manager = nullptr, QObject *parent = nullptr);
   explicit RestApiBase(QObject *parent=  nullptr);
-
   bool isTokenFresh() const;
   void grantAccess();
   QString token() const;
@@ -23,7 +22,6 @@ signals:
   void error(const QString &error_msg) const;
 protected slots:
   void handleReply(QNetworkReply * reply);
-
 protected:
   QNetworkReply* get(const QUrl &request, QUrlQuery params = QUrlQuery());
 

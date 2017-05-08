@@ -1,6 +1,7 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 #include "YaDRestApi.h"
+#include "FileDownloader.h"
 
 namespace {
   const char * const ACCEPT{"application/json"};
@@ -95,20 +96,21 @@ ReplyWrapper *YaDRestApi::uploadFile(const QString &path, const QUrlQuery &param
   return handler;
 }
 
-ReplyWrapper *YaDRestApi::downloadFile(const QUrlQuery &params) {
+ReplyWrapper *YaDRestApi::downloadFile(const QString &localpath, const QUrlQuery &params) {
   auto target_url = _main_url.resolved(QUrl("./disk/resources/download"));
   QNetworkReply *download_url_reply = get(target_url,params);
-  ReplyWrapper *handler{new ReplyWrapper};
+  FileDownloader *handler{new FileDownloader{localpath}};
   QObject::connect(download_url_reply, &QNetworkReply::finished, [this, handler, download_url_reply] {
     if (download_url_reply->bytesAvailable() == 0) {
-      download_url_reply->close();
       handler->setReply(download_url_reply);
+      download_url_reply->close();
       return;
     }
     QJsonDocument doc = QJsonDocument::fromJson(download_url_reply->readAll());
     QJsonObject obj = doc.object();
     QUrl download_url = obj["href"].toString();
     QNetworkRequest req {download_url};
+    req.setAttribute(QNetworkRequest::FollowRedirectsAttribute,true);
     QNetworkReply *download_reply = get(req);
     handler->setReply(download_reply);
     download_url_reply->deleteLater();

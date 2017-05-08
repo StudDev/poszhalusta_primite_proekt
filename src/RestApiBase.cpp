@@ -78,7 +78,8 @@ QString RestApiBase::token() const {
 }
 
 void RestApiBase::handleReply(QNetworkReply * reply) {
-  qDebug() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString() << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toString();
+  qDebug() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString()
+           << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toString();
   if (reply->error() != QNetworkReply::NetworkError::NoError) {
     emit replyNetworkError(reply->errorString(), reply->error());
     handleError(reply);
