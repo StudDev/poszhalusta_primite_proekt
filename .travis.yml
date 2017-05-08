@@ -1,7 +1,9 @@
 language: cpp
+notifications:
+    slack: top-programmers-team:eTt39t0p1fLisphx9IYkR3yj
 before_install:
-  - sudo add-apt-repository ppa:beineri/opt-qt58-xenial -y
-  - sudo apt-get update -q
+  - sudo echo "deb http://ppa.launchpad.net/beineri/opt-qt58-xenial/ubuntu xenial main" >> /etc/apt/sources.list
+  - sudo apt-get update -qq
   - sudo apt-get install qt58base qt58networkauth-no-lgpl qt58webengine qt58quickcontrols2 -y
   - /opt/qt58/bin/qt58-env.sh
 script:
