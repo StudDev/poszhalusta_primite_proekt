@@ -15,6 +15,7 @@ class PreferencesController : public QObject {
 
   Q_INVOKABLE QString getRootPath() const { return _root_path; }
   QSettings* getSettings() { return &_settings; }
+  QQuickView* getView() { return &_view; }
 
  public slots:
   void log(const QString& msg) const { qDebug() << msg; }
