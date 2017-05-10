@@ -10,11 +10,9 @@ class FileDownloader : public ReplyWrapper{
 public:
   FileDownloader(const QString &path, QObject *parent = nullptr);
   FileDownloader(const QString &path, QNetworkReply* reply, QObject *parent = nullptr);
-
-
-  void handleFinishedReply() override;
   void setReply(QNetworkReply *reply) override;
-
+  void handleFinishedReply() override;
+  ~FileDownloader();
 private slots:
   void handleNewBytes();
 private:
