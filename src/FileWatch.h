@@ -6,6 +6,8 @@
 
 #include <QtCore/QObject>
 
+#include <QThread>
+
 #include <QString>
 #include <QRegExp>
 #include <QDir>
@@ -29,18 +31,17 @@
 
 
 //TODO: FSEvent signal
-class FileWatch : public QObject {
+class FileWatch : public QThread {
     Q_OBJECT
 public:
-    explicit FileWatch(QObject *parent = nullptr);
+    explicit FileWatch(int inotify_descriptor,
+                       int control_pipe_descriptor,
+                       QHash<int, QString>& hash_by_descriptor,
+                       QThread *parent = nullptr);
     ~FileWatch();
-    //void AddRecursiveDirectory(QDir& arg);
-    void AddDirectory(const QDir& arg);
-    //void AddFile(QDir& arg);
-    void RemoveDirectory(const QDir& arg);
-    void StartWatch();
+    void run() Q_DECL_OVERRIDE;
 signals:
-    void FileWatchInitError();
+    void FileWatchInitError(int error_code);
     void FileWatchError();
     void FileWatchWrongArgument();
     void FileWatchDirectoryAlreadyAdded();
@@ -56,12 +57,12 @@ protected:
 
     //we use 2 hashtables to have fast access both by directory and filewatch descriptor
     //this could be a single boost::bimap
-    QHash<QString, int> hash_by_directory_;
-    QHash<int, QString> hash_by_descriptor_;
+    QHash<int, QString>& hash_by_descriptor_;
 
     //file descriptors, returned by inotify and epoll initialization functions
     int inotify_descriptor_;
     int epoll_descriptor_;
+    int control_pipe_descriptor_;
     int local_errno_;
 
 
