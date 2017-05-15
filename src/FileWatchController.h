@@ -27,41 +27,50 @@
 #include <cerrno>
 
 
+//TODO: this class
 class FileWatchController : public QObject {
-    Q_OBJECT
+Q_OBJECT
 
 public:
-    explicit FileWatchController(QObject *parent = nullptr);
-    ~FileWatchController();
+  explicit FileWatchController(QObject *parent = nullptr);
 
-    void addDirectory(const QDir& arg);
-    void removeDirectory(const QDir& arg);
+  ~FileWatchController();
 
-    void stopWatch();
-    void startWatch();
+  void addDirectory(const QDir &arg);
+
+  void removeDirectory(const QDir &arg);
+
+  void stopWatch();
+
+  void startWatch();
 
 signals:
-    void FileWatchControllerError(int error);
-    void WrongArgument();
+
+  void FileWatchControllerError(int error);
+
+  void WrongArgument();
 
 private:
-    const static auto WATCH_FLAGS_ = (IN_CREATE | IN_DELETE | IN_DELETE_SELF |
-                                      IN_MODIFY | IN_MOVE_SELF | IN_MOVE | IN_DONT_FOLLOW);
-    const static auto MAX_INOTIFY_EVENT_SIZE = sizeof(inotify_event) + NAME_MAX + 1;
+  bool initialize();
+
+  const static auto WATCH_FLAGS_ = (IN_CREATE | IN_DELETE | IN_DELETE_SELF |
+                                    IN_MODIFY | IN_MOVE_SELF | IN_MOVE | IN_DONT_FOLLOW);
+  const static auto MAX_INOTIFY_EVENT_SIZE = sizeof(inotify_event) + NAME_MAX + 1;
 
 
-    FileWatch* watcher;
+  FileWatch *watcher = nullptr;
 
-    //we use 2 hashtables to have fast access both by directory and filewatch descriptor
-    //this could be a single boost::bimap
-    QHash<QString, int> hash_by_directory_;
-    QHash<int, QString> hash_by_descriptor_;
+  //we use 2 hashtables to have fast access both by directory and filewatch descriptor
+  //this could be a single boost::bimap
+  QHash<QString, int> hash_by_directory_;
+  QHash<int, QString> hash_by_descriptor_;
 
-    //file descriptors, returned by inotify initialization functions
-    int inotify_descriptor_;
-    int local_errno_;
-    int pipe_descriptors_[2];
-    bool process_status_ = false;
+  //file descriptors, returned by inotify initialization functions
+  int inotify_descriptor_;
+  int local_errno_;
+  int pipe_descriptors_[2];
+  bool process_status_ = false;
+  bool initialized_ = false;
 
 };
 
