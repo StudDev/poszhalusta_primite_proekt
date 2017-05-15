@@ -1,5 +1,6 @@
 #include "LocalSyncMaster.h"
 
+//TODO: check api for nullptr
 LocalSyncMaster::LocalSyncMaster(YaDRestApi *api, QObject *parent)
   :QObject(parent),
    _api(api),
@@ -13,6 +14,7 @@ LocalSyncMaster::LocalSyncMaster(YaDRestApi *api, QObject *parent)
   forceSync();
 }
 
+//TODO: implement as slot
 void LocalSyncMaster::forceSync() {
   JsonReplyWrapper * remote_reply = getRemoteResources();
   getLocalResources();
@@ -24,10 +26,12 @@ void LocalSyncMaster::forceSync() {
 JsonReplyWrapper * LocalSyncMaster::getRemoteResources() {
   QUrlQuery params;
   params.addQueryItem("fields","items,items.path,items.md5,items.modified");
+  //TODO: set correct parent for file_lsit response
   JsonReplyWrapper *file_list = _api->getFileList(std::move(params));
   QObject::connect(file_list,&JsonReplyWrapper::jsonReply,this,&LocalSyncMaster::parseFileResourceList);
   return file_list;
 }
+
 
 void LocalSyncMaster::parseFileResourceList(const QJsonObject &jsonObject) {
   QJsonArray items = jsonObject["items"].toArray();
@@ -47,6 +51,7 @@ LocalSyncMaster::~LocalSyncMaster() {
 
 }
 
+//TODO: optimize it ( make it parallel or smth)
 void LocalSyncMaster::getLocalResources() {
   auto directories = _config->value("paths/watchingDirs","NOTHING").toStringList();
   QCryptographicHash md5hasher{QCryptographicHash::Md5};
@@ -68,7 +73,7 @@ void LocalSyncMaster::getLocalResources() {
     }
   }
 }
-
+//TODO: reduce memory usage, make _*_reources reusable
 void LocalSyncMaster::mergeResources() {
   qSort(_remote_resources.begin(),_remote_resources.end(),[](const auto &a, const auto &b){
     return a.path < b.path;

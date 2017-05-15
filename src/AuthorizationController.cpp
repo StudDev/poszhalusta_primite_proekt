@@ -10,10 +10,10 @@ namespace {
   const unsigned short WINDOW_HEIGHT = 660;
   const unsigned short WINDOW_WIDTH = 640;
   const QString CLIENT_IDENTIFIER{"20beb8f54f66490fa4f21b42f7af7145"};
-  const QString SHARED_KEY{"20beb8f54f66490fa4f21b42f7af7145"};
+  const QString SHARED_KEY{"45493f2fdac944f994b891995db2a305"};
 
 }
-
+//TODO check manager for nullptr
 AuthorizationController::AuthorizationController(QNetworkAccessManager *manager, QObject *parent)
   : QObject(parent),
     _oauth2(new QOAuth2AuthorizationCodeFlow(manager, this)) {
@@ -26,6 +26,7 @@ AuthorizationController::AuthorizationController(QNetworkAccessManager *manager,
 
 AuthorizationController::~AuthorizationController() {}
 
+
 bool AuthorizationController::openUrl(const QUrl& url) {
   _auth_url = url;
   _view.rootContext()->setContextProperty("controller", this);
@@ -35,7 +36,6 @@ bool AuthorizationController::openUrl(const QUrl& url) {
   _view.setMaximumSize(window_size);
   _view.setSource(AUTHORIZATION_VIEW_SOURCE);
   _view.show();
-
   return true;
 }
 
@@ -68,7 +68,7 @@ AuthorizationController::AuthorizationController(QObject *parent)
   :AuthorizationController{new QNetworkAccessManager(this),parent}{
 
 }
-
+//TODO: check oauth fro nullptr
 AuthorizationController::AuthorizationController(QOAuth2AuthorizationCodeFlow *oauth, QObject *parent)
   :QObject(parent), _oauth2(oauth){
   oauthAutoInit();
@@ -78,6 +78,7 @@ AuthorizationController::AuthorizationController(QOAuth2AuthorizationCodeFlow *o
 }
 
 void AuthorizationController::oauthAutoInit() {
+  //TODO: move 9980 to anon namespace as const
   auto reply_handler = new QOAuthHttpServerReplyHandler(9980, this);
   _oauth2->setReplyHandler(reply_handler);
   connect(_oauth2, &QOAuth2AuthorizationCodeFlow::statusChanged, [this, reply_handler](QAbstractOAuth::Status status) {

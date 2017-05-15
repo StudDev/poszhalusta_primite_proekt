@@ -17,6 +17,8 @@ FileDownloader::FileDownloader(const QString &path, QNetworkReply *reply, QObjec
   setReply(reply);
 }
 
+
+//TODO: check reply for nullptr
 void FileDownloader::setReply(QNetworkReply *reply) {
   _reply = reply;
   QObject::connect(_reply,&QNetworkReply::readyRead,this,&FileDownloader::handleNewBytes);
@@ -37,6 +39,7 @@ FileDownloader::~FileDownloader() {
   file.close();
 }
 
+//TODO: make ".tmp" const
 void FileDownloader::handleFinishedReply() {
   file.rename(file.fileName().remove(".tmp"));
 }

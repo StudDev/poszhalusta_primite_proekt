@@ -11,6 +11,7 @@
 #include "RestApiBase.h"
 
 
+//TODO: move QSettings to base class
 class YaDRestApi : public RestApiBase {
 Q_OBJECT
 public:

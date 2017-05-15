@@ -1,5 +1,6 @@
 #include "RestApiBase.h"
 
+//TODO: check manager for nullptr
 RestApiBase::RestApiBase(QNetworkAccessManager *manager, QObject *parent)
   :QObject(parent),
   _manager{manager},
@@ -8,6 +9,8 @@ RestApiBase::RestApiBase(QNetworkAccessManager *manager, QObject *parent)
   grantAccess();
   QObject::connect(_manager,&QNetworkAccessManager::finished,this,&RestApiBase::handleReply);
 }
+
+
 RestApiBase::RestApiBase(QObject *parent)
   :RestApiBase(new QNetworkAccessManager,parent){
   _manager->setParent(this);

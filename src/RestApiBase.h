@@ -6,7 +6,7 @@
 #include <QtCore/QUrlQuery>
 #include "ReplyWrapper.h"
 #include "AuthorizationController.h"
-
+//TODO: add QSettings management , implement interface for it
 class RestApiBase: public QObject {
  Q_OBJECT
 public:

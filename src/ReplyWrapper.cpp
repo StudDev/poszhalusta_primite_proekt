@@ -20,6 +20,7 @@ QNetworkReply *ReplyWrapper::getReply() const {
   return _reply;
 }
 
+//TODO: check reply for nullptr
 void ReplyWrapper::setReply(QNetworkReply *reply) {
   _reply = reply;
   _reply->setParent(this);
