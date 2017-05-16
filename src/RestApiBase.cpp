@@ -1,5 +1,6 @@
 #include "RestApiBase.h"
 
+//TODO: check manager for nullptr
 RestApiBase::RestApiBase(QNetworkAccessManager *manager, QObject *parent)
   :QObject(parent),
   _manager{manager},
@@ -8,6 +9,8 @@ RestApiBase::RestApiBase(QNetworkAccessManager *manager, QObject *parent)
   grantAccess();
   QObject::connect(_manager,&QNetworkAccessManager::finished,this,&RestApiBase::handleReply);
 }
+
+
 RestApiBase::RestApiBase(QObject *parent)
   :RestApiBase(new QNetworkAccessManager,parent){
   _manager->setParent(this);
@@ -79,7 +82,8 @@ QString RestApiBase::token() const {
 
 void RestApiBase::handleReply(QNetworkReply * reply) {
   qDebug() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString()
-           << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toString();
+           << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toString()
+           << reply->bytesAvailable();
   if (reply->error() != QNetworkReply::NetworkError::NoError) {
     emit replyNetworkError(reply->errorString(), reply->error());
     handleError(reply);

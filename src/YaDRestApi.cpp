@@ -9,16 +9,20 @@ namespace {
   const char * const MAIN_URL{"https://cloud-api.yandex.net:443/v1/"};
 }
 
-YaDRestApi::YaDRestApi(QNetworkAccessManager *network_access, QObject *parent)
+YaDRestApi::YaDRestApi(QNetworkAccessManager *network_access, QSettings *config, QObject *parent)
   :RestApiBase(network_access,parent),
     _accept{ACCEPT},
     _content_type{CONTENT_TYPE},
     _main_url{MAIN_URL},
-    _config{nullptr} {
-}
+    _config{config} {
 
+}
+YaDRestApi::YaDRestApi(QSettings *config, QObject *parent)
+  :YaDRestApi(new QNetworkAccessManager,config,parent){
+
+}
 YaDRestApi::YaDRestApi(QObject *parent)
-  : YaDRestApi{new QNetworkAccessManager, parent}{
+  : YaDRestApi{new QNetworkAccessManager,nullptr, parent}{
 
 }
 
@@ -37,7 +41,7 @@ JsonReplyWrapper *YaDRestApi::getResourceInfo(const QString &path, const QUrlQue
 }
 
 JsonReplyWrapper *YaDRestApi::getFileList(const QUrlQuery &params) {
-  auto target_url = _main_url.resolved(QUrl("./disk/resources/"));
+  auto target_url = _main_url.resolved(QUrl("./disk/resources/files"));
   return new JsonReplyWrapper{ get(target_url,params) };
 }
 
@@ -59,7 +63,7 @@ void YaDRestApi::setConfig(QSettings *config) {
 }
 
 JsonReplyWrapper *YaDRestApi::getLastUploads(const QUrlQuery &params) {
-  auto target_url = _main_url.resolved(QUrl("./disk/resources/"));
+  auto target_url = _main_url.resolved(QUrl("./disk/resources/last-uploads"));
   return new JsonReplyWrapper{ get(target_url,params) };
 }
 
@@ -164,6 +168,8 @@ void YaDRestApi::handleError(QNetworkReply *reply) const{
     emit replyApiError(json_obj);
   }
 }
+
+
 
 
 

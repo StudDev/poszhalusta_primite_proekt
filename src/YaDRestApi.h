@@ -11,13 +11,14 @@
 #include "RestApiBase.h"
 
 
+//TODO: move QSettings to base class
 class YaDRestApi : public RestApiBase {
 Q_OBJECT
 public:
 
   explicit YaDRestApi(QObject *parent = nullptr);
-
-  YaDRestApi(QNetworkAccessManager *network_access, QObject *parent = nullptr);
+  YaDRestApi(QSettings *config, QObject *parent = nullptr);
+  YaDRestApi(QNetworkAccessManager *network_access,  QSettings *config, QObject *parent = nullptr);
 
   QSettings *getConfig() const;
 

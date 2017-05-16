@@ -1,14 +1,15 @@
+#include <QtCore/QDir>
 #include "FileDownloader.h"
 
 FileDownloader::FileDownloader(const QString &path, QObject *parent)
   :ReplyWrapper{parent},
    file{path}{
-   file.setParent(_reply);
+   QDir().mkpath(QFileInfo(file).absolutePath());
+   if(file.exists()){
+      qDebug() << file.fileName() << "exists";
+      file.setFileName(path + ".tmp");
+   }
    file.open(QIODevice::WriteOnly);
-}
-void FileDownloader::handleFinishedReply() {
-   file.close();
-  _reply->close();
 }
 
 FileDownloader::FileDownloader(const QString &path, QNetworkReply *reply, QObject *parent)
@@ -16,6 +17,8 @@ FileDownloader::FileDownloader(const QString &path, QNetworkReply *reply, QObjec
   setReply(reply);
 }
 
+
+//TODO: check reply for nullptr
 void FileDownloader::setReply(QNetworkReply *reply) {
   _reply = reply;
   QObject::connect(_reply,&QNetworkReply::readyRead,this,&FileDownloader::handleNewBytes);
@@ -24,5 +27,19 @@ void FileDownloader::setReply(QNetworkReply *reply) {
 }
 
 void FileDownloader::handleNewBytes() {
+  if(!file.isOpen()){
+    qDebug() << file.fileName() << "error";
+    QObject::disconnect(_reply,&QNetworkReply::readyRead,this,&FileDownloader::handleNewBytes);
+    return;
+  }
   file.write(_reply->readAll());
+}
+
+FileDownloader::~FileDownloader() {
+  file.close();
+}
+
+//TODO: make ".tmp" const
+void FileDownloader::handleFinishedReply() {
+  file.rename(file.fileName().remove(".tmp"));
 }

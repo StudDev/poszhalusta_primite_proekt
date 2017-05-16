@@ -1,10 +1,12 @@
 #include <QtCore/QJsonDocument>
 #include "JsonReplyWrapper.h"
 
+
 JsonReplyWrapper::JsonReplyWrapper(QObject *parent)
   : ReplyWrapper{parent} {
 }
 
+//TODO: check reply for nullptr
 JsonReplyWrapper::JsonReplyWrapper(QNetworkReply *reply, QObject *parent)
   : ReplyWrapper{reply, parent} {
 

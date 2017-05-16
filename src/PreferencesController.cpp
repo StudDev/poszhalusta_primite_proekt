@@ -4,7 +4,7 @@
 #include <QDebug>
 
 PreferencesController::PreferencesController(QObject* parent)
-    : QObject(parent) {
+    :QObject(parent) {
   if (_settings.allKeys().contains("paths/root"))
     _root_path = QDir::cleanPath(_settings.value("paths/root").toString());
 
