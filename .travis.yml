@@ -1,6 +1,7 @@
 language: cpp
 dist: trusty
 sudo: required
+compiler: clang
 notifications:
     slack: top-programmers-team:eTt39t0p1fLisphx9IYkR3yj
 before_install:
