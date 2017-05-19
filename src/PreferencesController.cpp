@@ -2,6 +2,10 @@
 #include <QDir>
 #include <QQmlContext>
 #include <QDebug>
+namespace{
+  constexpr unsigned WINDOW_WIDTH = 640;
+  constexpr unsigned WINDOW_HEIGHT = 480;
+}
 
 PreferencesController::PreferencesController(QObject *parent)
   : QObject{parent} {
@@ -17,7 +21,7 @@ PreferencesController::PreferencesController(QObject *parent)
 
   _view.rootContext()->setContextProperty("controller", this);
 
-  const QSize windowSize = QSize(640, 480);
+  const QSize windowSize = QSize(WINDOW_WIDTH,WINDOW_HEIGHT);
   _view.setMinimumSize(windowSize);
   _view.setMaximumSize(windowSize);
 

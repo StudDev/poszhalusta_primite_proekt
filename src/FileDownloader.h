@@ -14,6 +14,8 @@ public:
 
   void setReply(QNetworkReply *reply) override;
 
+  void setTempfileSuffix(const QString &suffix);
+
   void handleFinishedReply() override;
 
   ~FileDownloader();
@@ -24,6 +26,7 @@ private slots:
 
 private:
   QFile file;
+  QString _tempfile_suffix;
 };
 
 

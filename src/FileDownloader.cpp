@@ -3,11 +3,12 @@
 
 FileDownloader::FileDownloader(const QString &path, QObject *parent)
   : ReplyWrapper{parent},
-    file{path} {
+    file{path},
+    _tempfile_suffix{".tmp"}{
   QDir().mkpath(QFileInfo(file).absolutePath());
   if (file.exists()) {
     qDebug() << file.fileName() << "exists";
-    file.setFileName(path + ".tmp");
+    file.setFileName(path + _tempfile_suffix);
   }
   file.open(QIODevice::WriteOnly);
 }
@@ -41,5 +42,5 @@ FileDownloader::~FileDownloader() {
 
 //TODO: make ".tmp" const
 void FileDownloader::handleFinishedReply() {
-  file.rename(file.fileName().remove(".tmp"));
+  file.rename(file.fileName().remove(_tempfile_suffix));
 }
