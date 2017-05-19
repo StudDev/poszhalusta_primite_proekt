@@ -30,12 +30,15 @@ AuthorizationController::~AuthorizationController() {}
 
 bool AuthorizationController::openUrl(const QUrl& url) {
   _auth_url = url;
+
   _view.rootContext()->setContextProperty("controller", this);
   _view.rootContext()->setContextProperty("authUrl", _auth_url);
+
   const QSize window_size = QSize(WINDOW_WIDTH,WINDOW_HEIGHT);
   _view.setMinimumSize(window_size);
   _view.setMaximumSize(window_size);
   _view.setSource(AUTHORIZATION_VIEW_SOURCE);
+
   _view.show();
   return true;
 }
