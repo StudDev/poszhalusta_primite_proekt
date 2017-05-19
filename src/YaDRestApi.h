@@ -17,8 +17,10 @@ Q_OBJECT
 public:
 
   explicit YaDRestApi(QObject *parent = nullptr);
+
   YaDRestApi(QSettings *config, QObject *parent = nullptr);
-  YaDRestApi(QNetworkAccessManager *network_access,  QSettings *config, QObject *parent = nullptr);
+
+  YaDRestApi(QNetworkAccessManager *network_access, QSettings *config, QObject *parent = nullptr);
 
   QSettings *getConfig() const;
 
@@ -54,14 +56,18 @@ public:
 
 protected:
   void modifyRequest(QNetworkRequest &request) const override;
+
   void handleError(QNetworkReply *reply) const override;
 
 signals:
+
   void replyApiError(const QJsonObject &error) const;
 
 private:
   void setHeaders(QNetworkRequest &request) const;
+
   void setAuthHeaders(QNetworkRequest &request) const;
+
   QByteArray _accept;
   QByteArray _content_type;
   QUrl _main_url;

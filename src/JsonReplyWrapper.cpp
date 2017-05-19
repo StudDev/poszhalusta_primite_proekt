@@ -11,6 +11,7 @@ JsonReplyWrapper::JsonReplyWrapper(QNetworkReply *reply, QObject *parent)
   : ReplyWrapper{reply, parent} {
 
 }
+
 JsonReplyWrapper::~JsonReplyWrapper() {
   _reply->deleteLater();
 }

@@ -8,18 +8,24 @@
 #include "ReplyWrapper.h"
 
 class JsonReplyWrapper : public ReplyWrapper {
-  Q_OBJECT
+Q_OBJECT
 public:
   explicit JsonReplyWrapper(QObject *parent = nullptr);
 
   explicit JsonReplyWrapper(QNetworkReply *reply, QObject *parent = nullptr);
 
-  const QJsonObject& getJsonResponse() const;
+  const QJsonObject &getJsonResponse() const;
+
   bool isError() const override;
+
   void handleFinishedReply() override;
+
   ~JsonReplyWrapper();
+
 signals:
-  void jsonReply(const QJsonObject& obj) const;
+
+  void jsonReply(const QJsonObject &obj) const;
+
 private:
   QJsonObject _jsonResponse;
 };

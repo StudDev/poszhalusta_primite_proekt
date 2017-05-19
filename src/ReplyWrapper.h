@@ -25,8 +25,11 @@ public:
 signals:
 
   void finished() const;
+
 protected slots:
+
   void watchReplyState();
+
 protected:
   QNetworkReply *_reply;
 };
