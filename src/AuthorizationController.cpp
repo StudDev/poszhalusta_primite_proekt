@@ -3,6 +3,7 @@
 #include <QtWebEngine/qtwebengineglobal.h>
 #include <QQmlContext>
 
+//TODO move constants to configration file
 namespace {
   const QUrl AUTHORIZATION_URL{"https://oauth.yandex.ru/authorize"};
   const QUrl TOKEN_URL{"https://oauth.yandex.ru/token"};
