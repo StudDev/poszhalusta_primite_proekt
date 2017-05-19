@@ -57,13 +57,11 @@ protected:
   virtual void handleError(QNetworkReply *reply) const;
 
 private:
+  template<typename InputData>
   QNetworkReply *performRequest(const QNetworkRequest &request,
-                                QIODevice *data,
+                                InputData &&data,
                                 QNetworkAccessManager::Operation request_type = QNetworkAccessManager::GetOperation) const;
 
-  QNetworkReply *performRequest(const QNetworkRequest &request,
-                                const QByteArray &data,
-                                QNetworkAccessManager::Operation request_type = QNetworkAccessManager::GetOperation) const;
 
   QNetworkReply *defaultRequest(const QUrl &request,
                                 QIODevice *data = nullptr,

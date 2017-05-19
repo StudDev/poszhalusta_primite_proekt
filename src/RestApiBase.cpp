@@ -1,8 +1,17 @@
 #include "RestApiBase.h"
 
+
+template<>
+QNetworkReply *RestApiBase::performRequest<std::nullptr_t>(const QNetworkRequest &request,
+                                                           std::nullptr_t &&data,
+                                                           QNetworkAccessManager::Operation request_type) const {
+  performRequest(request,"",request_type);
+}
+
+
 //TODO: check manager for nullptr
 RestApiBase::RestApiBase(QNetworkAccessManager *manager, QObject *parent)
-  : QObject{parent},
+  : QObject(parent),
     _manager{manager},
     _oauth{new QOAuth2AuthorizationCodeFlow{_manager, this}},
     is_auth_process_started{false} {
@@ -12,7 +21,7 @@ RestApiBase::RestApiBase(QNetworkAccessManager *manager, QObject *parent)
 
 
 RestApiBase::RestApiBase(QObject *parent)
-  : RestApiBase{new QNetworkAccessManager, parent} {
+  : RestApiBase(new QNetworkAccessManager, parent) {
   _manager->setParent(this);
 }
 
@@ -129,14 +138,16 @@ QNetworkReply *RestApiBase::defaultRequest(const QUrl &url, const QByteArray &da
   return performRequest(request, data, request_type);
 }
 
+
+template<typename InputData>
 QNetworkReply *RestApiBase::performRequest(const QNetworkRequest &request,
-                                           QIODevice *data,
+                                           InputData &&data,
                                            QNetworkAccessManager::Operation request_type) const {
   switch (request_type) {
     case QNetworkAccessManager::GetOperation:
       return _manager->get(request);
     case QNetworkAccessManager::PutOperation:
-      return _manager->put(request, data);
+      return _manager->put(request, std::forward<InputData>(data));
     case QNetworkAccessManager::PostOperation:
       return _manager->post(request, data);
     case QNetworkAccessManager::DeleteOperation:
@@ -145,22 +156,4 @@ QNetworkReply *RestApiBase::performRequest(const QNetworkRequest &request,
       return nullptr;
   }
 }
-
-QNetworkReply *RestApiBase::performRequest(const QNetworkRequest &request,
-                                           const QByteArray &data,
-                                           QNetworkAccessManager::Operation request_type) const {
-  switch (request_type) {
-    case QNetworkAccessManager::GetOperation:
-      return _manager->get(request);
-    case QNetworkAccessManager::PutOperation:
-      return _manager->put(request, data);
-    case QNetworkAccessManager::PostOperation:
-      return _manager->post(request, data);
-    case QNetworkAccessManager::DeleteOperation:
-      return _manager->deleteResource(request);
-    default:
-      return nullptr;
-  }
-}
-
 

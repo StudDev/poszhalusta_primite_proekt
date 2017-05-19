@@ -39,13 +39,13 @@ bool FileWatch::initialize() {
   pipe_ev.data.fd = control_pipe_descriptor_;
 
   if (-1 == epoll_ctl(epoll_descriptor_, EPOLL_CTL_ADD, inotify_descriptor_, &inotify_ev)) {
-    qDebug() << "epoll_ctl add error";
+    qDebug() << "epoll_ctl inotify addition error";
     emit FileWatchError();
     return false;
   }
 
   if (-1 == epoll_ctl(epoll_descriptor_, EPOLL_CTL_ADD, pipe_ev.data.fd, &pipe_ev)) {
-    qDebug() << "epoll_ctl add error";
+    qDebug() << "epoll_ctl pipe addition error";
     emit FileWatchError();
     return false;
   }
