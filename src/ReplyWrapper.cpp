@@ -1,7 +1,7 @@
 #include "ReplyWrapper.h"
 
 ReplyWrapper::ReplyWrapper(QObject *parent)
-  : QObject(parent) {
+  : QObject{parent} {
 
 }
 

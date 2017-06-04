@@ -6,60 +6,72 @@
 #include <QtCore/QUrlQuery>
 #include "ReplyWrapper.h"
 #include "AuthorizationController.h"
+
 //TODO: add QSettings management , implement interface for it
-class RestApiBase: public QObject {
- Q_OBJECT
+class RestApiBase : public QObject {
+Q_OBJECT
 public:
   RestApiBase(QNetworkAccessManager *manager = nullptr, QObject *parent = nullptr);
-  explicit RestApiBase(QObject *parent=  nullptr);
+
+  explicit RestApiBase(QObject *parent = nullptr);
+
   bool isTokenFresh() const;
+
   void grantAccess();
+
   QString token() const;
+
   ~RestApiBase();
+
 signals:
+
   void accessGranted() const;
+
   void replyNetworkError(const QString &error_msg, QNetworkReply::NetworkError error) const;
+
   void error(const QString &error_msg) const;
+
 protected slots:
-  void handleReply(QNetworkReply * reply);
+
+  void handleReply(QNetworkReply *reply);
+
 protected:
-  QNetworkReply* get(const QUrl &request, QUrlQuery params = QUrlQuery());
+  QNetworkReply *get(const QUrl &request, QUrlQuery params = QUrlQuery());
 
-  QNetworkReply* get(const QNetworkRequest &request);
+  QNetworkReply *get(const QNetworkRequest &request);
 
-  QNetworkReply* deleteResource(const QUrl &request,const QUrlQuery params = QUrlQuery());
+  QNetworkReply *deleteResource(const QUrl &request, const QUrlQuery params = QUrlQuery());
 
-  QNetworkReply* post(const QUrl &request,QIODevice *data, const QUrlQuery params = QUrlQuery());
+  QNetworkReply *post(const QUrl &request, QIODevice *data, const QUrlQuery params = QUrlQuery());
 
-  QNetworkReply* put(const QUrl &request, QIODevice *data, const QUrlQuery params = QUrlQuery());
+  QNetworkReply *put(const QUrl &request, QIODevice *data, const QUrlQuery params = QUrlQuery());
 
-  QNetworkReply* post(const QUrl &request,const QByteArray &data,const QUrlQuery params = QUrlQuery());
+  QNetworkReply *post(const QUrl &request, const QByteArray &data, const QUrlQuery params = QUrlQuery());
 
-  QNetworkReply* put(const QUrl &request, const QByteArray &data, const QUrlQuery params = QUrlQuery());
+  QNetworkReply *put(const QUrl &request, const QByteArray &data, const QUrlQuery params = QUrlQuery());
 
-  QNetworkRequest createRequest(const QUrl &request,const QUrlQuery &params = QUrlQuery()) const;
+  QNetworkRequest createRequest(const QUrl &request, const QUrlQuery &params = QUrlQuery()) const;
 
   virtual void modifyRequest(QNetworkRequest &request) const;
+
   virtual void handleError(QNetworkReply *reply) const;
 
 private:
-  QNetworkReply* performRequest(const QNetworkRequest &request,
-                                QIODevice *data,
+  template<typename InputData>
+  QNetworkReply *performRequest(const QNetworkRequest &request,
+                                InputData &&data,
                                 QNetworkAccessManager::Operation request_type = QNetworkAccessManager::GetOperation) const;
 
-  QNetworkReply* performRequest(const QNetworkRequest &request,
-                                const QByteArray &data,
-                                QNetworkAccessManager::Operation request_type = QNetworkAccessManager::GetOperation) const;
 
-  QNetworkReply* defaultRequest(const QUrl &request,
+  QNetworkReply *defaultRequest(const QUrl &request,
                                 QIODevice *data = nullptr,
                                 const QUrlQuery params = QUrlQuery(),
                                 QNetworkAccessManager::Operation request_type = QNetworkAccessManager::GetOperation);
 
-  QNetworkReply* defaultRequest(const QUrl &request,
-                                 const QByteArray &data,
-                                 const QUrlQuery params = QUrlQuery(),
-                                 QNetworkAccessManager::Operation request_type = QNetworkAccessManager::GetOperation);
+  QNetworkReply *defaultRequest(const QUrl &request,
+                                const QByteArray &data,
+                                const QUrlQuery params = QUrlQuery(),
+                                QNetworkAccessManager::Operation request_type = QNetworkAccessManager::GetOperation);
 
   mutable bool is_auth_process_started;
   QNetworkAccessManager *_manager;

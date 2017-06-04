@@ -39,13 +39,13 @@ bool FileWatch::initialize() {
   pipe_ev.data.fd = control_pipe_descriptor_;
 
   if (-1 == epoll_ctl(epoll_descriptor_, EPOLL_CTL_ADD, inotify_descriptor_, &inotify_ev)) {
-    qDebug() << "epoll_ctl add error";
+    qDebug() << "epoll_ctl inotify addition error";
     emit FileWatchError();
     return false;
   }
 
   if (-1 == epoll_ctl(epoll_descriptor_, EPOLL_CTL_ADD, pipe_ev.data.fd, &pipe_ev)) {
-    qDebug() << "epoll_ctl add error";
+    qDebug() << "epoll_ctl pipe addition error";
     emit FileWatchError();
     return false;
   }
@@ -118,53 +118,61 @@ void FileWatch::HandleEvents() {
     void *unread_events_ptr;
 
     //we can advance unread_events_ptr on event->len, because is happens only after the first iteration
-    //so at that moment we have initialized "event->len"
+    //so at the moment of advancing we have already initialized "event->len"
     for (unread_events_ptr = buf; unread_events_ptr < buf + read_len;
          unread_events_ptr += sizeof(inotify_event) + event->len) {
 
       event = static_cast<inotify_event *>(unread_events_ptr);
 
-
       //filter to avoid unix - temporary files beginning with "."
       if (event->len) {
-        QString name = event->name;
-        QRegExp check_reg("^(?![.])(?!.*[-_.]$).+");
-        if (!check_reg.exactMatch(name))
+        if(FilterByName(*event))
           continue;
       }
 
-
-      if (event->mask & IN_CREATE) {
-        qDebug() << "IN_CREATE: ";
-      }
-      if (event->mask & IN_DELETE) {
-        qDebug() << "IN_DELETE: ";
-      }
-      if (event->mask & IN_DELETE_SELF) {
-        qDebug() << "IN_DELETE_SELF: ";
-      }
-      if (event->mask & IN_MODIFY) {
-        qDebug() << "IN_MODIFY: ";
-      }
-      if (event->mask & IN_MOVE_SELF) {
-        qDebug() << "IN_MOVE_SELF: ";
-      }
-      if (event->mask & IN_MOVED_FROM) {
-        qDebug() << "Cookie: " << event->cookie;
-        qDebug() << "IN_MOVED_FROM: ";
-      }
-      if (event->mask & IN_MOVED_TO) {
-        qDebug() << "Cookie: " << event->cookie;
-        qDebug() << "IN_MOVED_TO: ";
-      }
-
-      qDebug() << hash_by_descriptor_.value(event->wd);
-
-      if (event->len) {
-        qDebug() << event->name;
-      }
-
-      qDebug() << "-------------------------------------------------------";
+      HandleSingleEvent(*event);
     }
   }
+}
+//this function is currently in debug version: later all qDebug() calls will be replaced with
+//signals in special form
+void FileWatch::HandleSingleEvent(const inotify_event &event) const {
+  if (event.mask & IN_CREATE) {
+    qDebug() << "IN_CREATE: ";
+  }
+  if (event.mask & IN_DELETE) {
+    qDebug() << "IN_DELETE: ";
+  }
+  if (event.mask & IN_DELETE_SELF) {
+    qDebug() << "IN_DELETE_SELF: ";
+  }
+  if (event.mask & IN_MODIFY) {
+    qDebug() << "IN_MODIFY: ";
+  }
+  if (event.mask & IN_MOVE_SELF) {
+    qDebug() << "IN_MOVE_SELF: ";
+  }
+  if (event.mask & IN_MOVED_FROM) {
+    qDebug() << "Cookie: " << event.cookie;
+    qDebug() << "IN_MOVED_FROM: ";
+  }
+  if (event.mask & IN_MOVED_TO) {
+    qDebug() << "Cookie: " << event.cookie;
+    qDebug() << "IN_MOVED_TO: ";
+  }
+
+  qDebug() << hash_by_descriptor_.value(event.wd);
+
+  if (event.len) {
+    qDebug() << event.name;
+  }
+
+  qDebug() << "-------------------------------------------------------";
+}
+
+bool FileWatch::FilterByName(const inotify_event &event) const {
+  QString name = event.name;
+  QRegExp check_reg("^(?![.])(?!.*[-_.]$).+");
+  if (!check_reg.exactMatch(name))
+    return true;
 }

@@ -66,6 +66,8 @@ protected:
   const static int MAX_EPOLL_EVENTS = 10;
 
   void HandleEvents();
+  void HandleSingleEvent(const inotify_event& event) const;
+  bool FilterByName(const inotify_event& event) const;
 
 
   //we use 2 hashtables to have fast access both by directory and filewatch descriptor

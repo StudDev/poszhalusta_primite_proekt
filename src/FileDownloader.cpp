@@ -2,18 +2,19 @@
 #include "FileDownloader.h"
 
 FileDownloader::FileDownloader(const QString &path, QObject *parent)
-  :ReplyWrapper{parent},
-   file{path}{
-   QDir().mkpath(QFileInfo(file).absolutePath());
-   if(file.exists()){
-      qDebug() << file.fileName() << "exists";
-      file.setFileName(path + ".tmp");
-   }
-   file.open(QIODevice::WriteOnly);
+  : ReplyWrapper{parent},
+    file{path},
+    _tempfile_suffix{".tmp"}{
+  QDir().mkpath(QFileInfo(file).absolutePath());
+  if (file.exists()) {
+    qDebug() << file.fileName() << "exists";
+    file.setFileName(path + _tempfile_suffix);
+  }
+  file.open(QIODevice::WriteOnly);
 }
 
 FileDownloader::FileDownloader(const QString &path, QNetworkReply *reply, QObject *parent)
-  :FileDownloader{path,parent}{
+  : FileDownloader{path, parent} {
   setReply(reply);
 }
 
@@ -21,15 +22,15 @@ FileDownloader::FileDownloader(const QString &path, QNetworkReply *reply, QObjec
 //TODO: check reply for nullptr
 void FileDownloader::setReply(QNetworkReply *reply) {
   _reply = reply;
-  QObject::connect(_reply,&QNetworkReply::readyRead,this,&FileDownloader::handleNewBytes);
-  QObject::connect(_reply,&QNetworkReply::finished,this,&FileDownloader::watchReplyState);
+  QObject::connect(_reply, &QNetworkReply::readyRead, this, &FileDownloader::handleNewBytes);
+  QObject::connect(_reply, &QNetworkReply::finished, this, &FileDownloader::watchReplyState);
   _reply->setParent(this);
 }
 
 void FileDownloader::handleNewBytes() {
-  if(!file.isOpen()){
+  if (!file.isOpen()) {
     qDebug() << file.fileName() << "error";
-    QObject::disconnect(_reply,&QNetworkReply::readyRead,this,&FileDownloader::handleNewBytes);
+    QObject::disconnect(_reply, &QNetworkReply::readyRead, this, &FileDownloader::handleNewBytes);
     return;
   }
   file.write(_reply->readAll());
@@ -41,5 +42,5 @@ FileDownloader::~FileDownloader() {
 
 //TODO: make ".tmp" const
 void FileDownloader::handleFinishedReply() {
-  file.rename(file.fileName().remove(".tmp"));
+  file.rename(file.fileName().remove(_tempfile_suffix));
 }
