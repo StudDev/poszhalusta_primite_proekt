@@ -1,28 +1,28 @@
 #include "RestApiBase.h"
+#include "QOAuth2.h"
 
 
 template<>
 QNetworkReply *RestApiBase::performRequest<std::nullptr_t>(const QNetworkRequest &request,
                                                            std::nullptr_t &&data,
                                                            QNetworkAccessManager::Operation request_type) const {
-  performRequest(request,"",request_type);
+  performRequest(request, "", request_type);
 }
 
 
 //TODO: check manager for nullptr
-RestApiBase::RestApiBase(QNetworkAccessManager *manager, QObject *parent)
-  : QObject(parent),
-    _manager{manager},
-    _oauth{new QOAuth2AuthorizationCodeFlow{_manager, this}},
-    is_auth_process_started{false} {
-  grantAccess();
-  QObject::connect(_manager, &QNetworkAccessManager::finished, this, &RestApiBase::handleReply);
+RestApiBase::RestApiBase(QObject *parent)
+  : RestApiBase{new QOAuth2(this), parent} {
 }
 
 
-RestApiBase::RestApiBase(QObject *parent)
-  : RestApiBase(new QNetworkAccessManager, parent) {
-  _manager->setParent(this);
+RestApiBase::RestApiBase(QOAuth2AuthorizationCodeFlow *authorizer, QObject *parent)
+  : QObject{parent},
+    _oauth{authorizer},
+    is_auth_process_started{false} {
+  grantAccess();
+  auto *network_manager = _oauth->networkAccessManager();
+  QObject::connect(network_manager, &QNetworkAccessManager::finished, this, &RestApiBase::handleReply);
 }
 
 void RestApiBase::grantAccess() {
@@ -40,7 +40,6 @@ void RestApiBase::grantAccess() {
 }
 
 RestApiBase::~RestApiBase() {
-  _manager->deleteLater();
   _oauth->deleteLater();
 }
 
@@ -89,7 +88,7 @@ QString RestApiBase::token() const {
   return _oauth->token();
 }
 
-void RestApiBase::handleReply(QNetworkReply * reply) {
+void RestApiBase::handleReply(QNetworkReply *reply) {
   qDebug() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString()
            << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toString()
            << reply->bytesAvailable();
@@ -100,7 +99,7 @@ void RestApiBase::handleReply(QNetworkReply * reply) {
   return;
 }
 
-void RestApiBase::handleError(QNetworkReply * reply) const {
+void RestApiBase::handleError(QNetworkReply *reply) const {
   return;
 }
 
@@ -112,9 +111,9 @@ QNetworkReply *RestApiBase::defaultRequest(const QUrl &url,
                                            QIODevice *data,
                                            const QUrlQuery params,
                                            QNetworkAccessManager::Operation request_type) {
-  QNetworkReply * reply = nullptr;
+  QNetworkReply *reply = nullptr;
   auto request = createRequest(url, params);
-  if (_oauth->property("Status") != "Granted" || !isTokenFresh()) {
+  if (_oauth->status() != QAbstractOAuth::Status::Granted || !isTokenFresh()) {
     grantAccess();
     QObject::connect(this, &RestApiBase::accessGranted, [request, data, &reply, request_type, this] {
       reply = performRequest(request, data, request_type);
@@ -126,9 +125,9 @@ QNetworkReply *RestApiBase::defaultRequest(const QUrl &url,
 
 QNetworkReply *RestApiBase::defaultRequest(const QUrl &url, const QByteArray &data, const QUrlQuery params,
                                            QNetworkAccessManager::Operation request_type) {
-  QNetworkReply * reply = nullptr;
+  QNetworkReply *reply = nullptr;
   auto request = createRequest(url, params);
-  if (_oauth->property("Status") != "Granted" || !isTokenFresh()) {
+  if (_oauth->status() != QAbstractOAuth::Status::Granted || !isTokenFresh()) {
     grantAccess();
     QObject::connect(this, &RestApiBase::accessGranted, [request, &data, &reply, request_type, this] {
       reply = performRequest(request, data, request_type);
@@ -143,17 +142,19 @@ template<typename InputData>
 QNetworkReply *RestApiBase::performRequest(const QNetworkRequest &request,
                                            InputData &&data,
                                            QNetworkAccessManager::Operation request_type) const {
+  auto *manager = _oauth->networkAccessManager();
   switch (request_type) {
     case QNetworkAccessManager::GetOperation:
-      return _manager->get(request);
+      return manager->get(request);
     case QNetworkAccessManager::PutOperation:
-      return _manager->put(request, std::forward<InputData>(data));
+      return manager->put(request, std::forward<InputData>(data));
     case QNetworkAccessManager::PostOperation:
-      return _manager->post(request, data);
+      return manager->post(request, data);
     case QNetworkAccessManager::DeleteOperation:
-      return _manager->deleteResource(request);
+      return manager->deleteResource(request);
     default:
       return nullptr;
   }
 }
+
 

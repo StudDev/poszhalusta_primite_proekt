@@ -20,8 +20,6 @@ public:
 
   YaDRestApi(QSettings *config, QObject *parent = nullptr);
 
-  YaDRestApi(QNetworkAccessManager *network_access, QSettings *config, QObject *parent = nullptr);
-
   QSettings *getConfig() const;
 
   JsonReplyWrapper *getResourceInfo(const QString &path, const QUrlQuery &params);

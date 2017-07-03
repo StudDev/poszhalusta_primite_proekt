@@ -9,8 +9,8 @@ namespace {
   const char *const MAIN_URL{"https://cloud-api.yandex.net:443/v1/"};
 }
 
-YaDRestApi::YaDRestApi(QNetworkAccessManager *network_access, QSettings *config, QObject *parent)
-  : RestApiBase{network_access, parent},
+YaDRestApi::YaDRestApi(QSettings *config, QObject *parent)
+  : RestApiBase{parent},
     _accept{ACCEPT},
     _content_type{CONTENT_TYPE},
     _main_url{MAIN_URL},
@@ -18,13 +18,8 @@ YaDRestApi::YaDRestApi(QNetworkAccessManager *network_access, QSettings *config,
 
 }
 
-YaDRestApi::YaDRestApi(QSettings *config, QObject *parent)
-  : YaDRestApi{new QNetworkAccessManager, config, parent} {
-
-}
-
 YaDRestApi::YaDRestApi(QObject *parent)
-  : YaDRestApi{new QNetworkAccessManager, nullptr, parent} {
+  : YaDRestApi{nullptr, parent} {
 
 }
 

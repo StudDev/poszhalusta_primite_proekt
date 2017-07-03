@@ -11,10 +11,8 @@
 class RestApiBase : public QObject {
 Q_OBJECT
 public:
-  RestApiBase(QNetworkAccessManager *manager = nullptr, QObject *parent = nullptr);
-
   explicit RestApiBase(QObject *parent = nullptr);
-
+  RestApiBase(QOAuth2AuthorizationCodeFlow *authorizer, QObject *parent = nullptr);
   bool isTokenFresh() const;
 
   void grantAccess();
@@ -74,7 +72,6 @@ private:
                                 QNetworkAccessManager::Operation request_type = QNetworkAccessManager::GetOperation);
 
   mutable bool is_auth_process_started;
-  QNetworkAccessManager *_manager;
   QOAuth2AuthorizationCodeFlow *_oauth;
 };
 

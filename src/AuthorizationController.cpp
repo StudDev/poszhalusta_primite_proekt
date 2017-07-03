@@ -1,4 +1,5 @@
 #include "AuthorizationController.h"
+#include "QOAuth2.h"
 
 #include <QtWebEngine/qtwebengineglobal.h>
 #include <QQmlContext>
@@ -17,13 +18,24 @@ namespace {
 //TODO check manager for nullptr
 AuthorizationController::AuthorizationController(QNetworkAccessManager *manager, QObject *parent)
   : QObject(parent),
-    _oauth2(new QOAuth2AuthorizationCodeFlow(manager, this)) {
+    _oauth2(new QOAuth2(manager, this)) {
   oauthAutoInit();
   QtWebEngine::initialize();
   connect(_oauth2, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser,
       this, &AuthorizationController::openUrl);
 }
+AuthorizationController::AuthorizationController(QObject *parent)
+  :AuthorizationController{new QNetworkAccessManager(this),parent}{
 
+}
+//TODO: check oauth fro nullptr
+AuthorizationController::AuthorizationController(QOAuth2AuthorizationCodeFlow *oauth, QObject *parent)
+  :QObject(parent), _oauth2(oauth){
+  oauthAutoInit();
+  QtWebEngine::initialize();
+  connect(_oauth2, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser,
+          this, &AuthorizationController::openUrl);
+}
 
 AuthorizationController::~AuthorizationController() {}
 
@@ -46,12 +58,10 @@ bool AuthorizationController::openUrl(const QUrl& url) {
 void AuthorizationController::grant() {
   if (_settings.allKeys().contains("token/token")) {
     _oauth2->setToken(_settings.value("token/token").toString());
-    qDebug() << _oauth2->token() << ' ' << _oauth2->expirationAt();
+     qDebug() << _oauth2->token() << ' ' << _oauth2->expirationAt();
   } else {
     _oauth2->grant();
   }
-
-  _oauth2->setProperty("Status","Granted");
 }
 
 QOAuth2AuthorizationCodeFlow* AuthorizationController::getOAuth2AuthorizationCodeFlow() const {
@@ -68,18 +78,7 @@ bool AuthorizationController::isExpired() {
   return _oauth2->expirationAt() <= QDateTime::currentDateTime();
 }
 
-AuthorizationController::AuthorizationController(QObject *parent)
-  :AuthorizationController{new QNetworkAccessManager(this),parent}{
 
-}
-//TODO: check oauth fro nullptr
-AuthorizationController::AuthorizationController(QOAuth2AuthorizationCodeFlow *oauth, QObject *parent)
-  :QObject(parent), _oauth2(oauth){
-  oauthAutoInit();
-  QtWebEngine::initialize();
-  connect(_oauth2, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser,
-          this, &AuthorizationController::openUrl);
-}
 
 void AuthorizationController::oauthAutoInit() {
   //TODO: move 9980 to anon namespace as const
@@ -98,5 +97,4 @@ void AuthorizationController::oauthAutoInit() {
   _oauth2->setAccessTokenUrl(TOKEN_URL);
   _oauth2->setClientIdentifier(CLIENT_IDENTIFIER);
   _oauth2->setClientIdentifierSharedKey(SHARED_KEY);
-  _oauth2->setProperty("Status","NotGranted");
 }
