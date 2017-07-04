@@ -14,7 +14,7 @@ public:
 
   Configurable(ConfigLoader *loader);
 
-  void loadConfig(ConfigLoader *loader);
+  void loadConfig(ConfigLoader *customLoader);
 
   void reloadConfig();
 
@@ -48,8 +48,6 @@ private:
   ConfigLoader *_loader;
 };
 
-const QString Configurable::application_name = "yds";
-const QString Configurable::organization_name = "TopCodersTeam";
 
 
 #endif //YDS_CONFIGURABLE_H

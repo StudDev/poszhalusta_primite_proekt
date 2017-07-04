@@ -4,7 +4,6 @@
 
 #include <QtCore/QObject>
 
-
 #include "YaDRestApi.h"
 
 struct ResourceRow {

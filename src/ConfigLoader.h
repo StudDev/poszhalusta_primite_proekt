@@ -6,6 +6,10 @@
 #include "Configurable.h"
 #include "ConfigObserver.h"
 
+class Configurable;
+
+class ConfigObserver;
+
 class ConfigLoader {
 public:
   ConfigLoader();
@@ -16,7 +20,7 @@ public:
 
   void unregisterConfigHolder(Configurable *config_holder);
 
-  ~ConfigLoader();
+  virtual  ~ConfigLoader();
 
 private:
   ConfigObserver *_observer;

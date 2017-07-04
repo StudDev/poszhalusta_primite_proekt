@@ -1,5 +1,8 @@
 #include "Configurable.h"
+#include <QDebug>
 
+const QString Configurable::application_name = "yds";
+const QString Configurable::organization_name = "TopCodersTeam";
 
 Configurable::Configurable(ConfigLoader *loader)
   : _config(nullptr),
@@ -10,29 +13,38 @@ Configurable::Configurable(ConfigLoader *loader)
 Configurable::Configurable()
   : _config(nullptr),
     _loader(nullptr) {
-
 }
 
 void Configurable::changeConfigSlot(QSettings *new_config) {
-  handleConfigChange(new_config);
+  if (getConfig() != new_config) {
+    handleConfigChange(new_config);
+  }
 }
 
 Configurable::~Configurable() {
-
+  if (_loader != nullptr) {
+    _loader->unregisterConfigHolder(this);
+  }
+  delete _loader;
 }
 
 QSettings *Configurable::getConfig() const {
   return _config;
 }
 
-void Configurable::loadConfig(ConfigLoader *loader) {
+void Configurable::loadConfig(ConfigLoader *customLoader) {
   if (_config != nullptr) {
     _loader->unregisterConfigHolder(this);
   }
-  _loader = loader;
+  if (customLoader != nullptr) {
+    if (_loader != nullptr) {
+      delete _loader;
+    }
+    _loader = customLoader;
+  }
   _config = _loader->createConfigInstance(organization_name, application_name);
-  _loader->registerConfigHolder(this);
   _config->setParent(this);
+  _loader->registerConfigHolder(this);
 }
 
 void Configurable::reloadConfig() {
