@@ -10,17 +10,12 @@
 #include "JsonReplyWrapper.h"
 #include "RestApiBase.h"
 
-
 //TODO: move QSettings to base class
 class YaDRestApi : public RestApiBase {
 Q_OBJECT
 public:
 
   explicit YaDRestApi(QObject *parent = nullptr);
-
-  YaDRestApi(QSettings *config, QObject *parent = nullptr);
-
-  QSettings *getConfig() const;
 
   JsonReplyWrapper *getResourceInfo(const QString &path, const QUrlQuery &params);
 
@@ -48,14 +43,17 @@ public:
 
   JsonReplyWrapper *getOperationStatus(const QUrl &operation_url);
 
-  void setConfig(QSettings *config);
-
   ~YaDRestApi();
 
 protected:
   void modifyRequest(QNetworkRequest &request) const override;
 
-  void handleError(QNetworkReply *reply) const override;
+  void handleError(QNetworkReply *reply) override;
+
+  void handleConfigChange(QSettings *new_config) override;
+
+  void loadConfigVariables() override;
+
 
 signals:
 
@@ -66,10 +64,24 @@ private:
 
   void setAuthHeaders(QNetworkRequest &request) const;
 
+  struct {
+    QUrl main_url{"https://cloud-api.yandex.net:443/v1/"};
+    QUrl resource_info_url{"./disk/resources/"};
+    QUrl disk_info_url{"./disk/"};
+    QUrl file_list_url{"./disk/resources/files"};
+    QUrl upload_file_url{"./disk/resources/upload"};
+    QUrl download_file_url{"./disk/resources/download"};
+    QUrl copy_resource_url{"./disk/resources/copy"};
+    QUrl move_resource_url{"./disk/resources/move"};
+    QUrl remove_resource_url{"./disk/resources"};
+    QUrl clean_trash_url{"./trash/resources"};
+    QUrl restore_url{"./trash/resources/restore"};
+    QUrl create_folder_url{"./disk/resources"};
+    QUrl last_uploads_url{"./disk/resources/last-uploads"};
+  } _conf_vars;
   QByteArray _accept;
   QByteArray _content_type;
   QUrl _main_url;
-  QSettings *_config;
 };
 
 

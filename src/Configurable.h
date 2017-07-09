@@ -10,13 +10,14 @@ class ConfigLoader;
 class Configurable : public QObject {
 Q_OBJECT
 public:
-  Configurable();
+  Configurable(QObject *parent = nullptr);
 
-  Configurable(ConfigLoader *loader);
+  Configurable(QObject *parent, ConfigLoader *loader);
 
   void loadConfig(ConfigLoader *customLoader);
 
-  void reloadConfig();
+
+  void reloadConfig(ConfigLoader *customLoader);
 
   QSettings *getConfig() const;
 
@@ -39,7 +40,9 @@ signals:
   void configChanged(QSettings *_config);
 
 protected:
-  virtual void handleConfigChange(QSettings *new_config) = 0;
+  virtual void handleConfigChange(QSettings *new_config);
+
+  virtual void loadConfigVariables() = 0;
 
 private:
   static const QString application_name;

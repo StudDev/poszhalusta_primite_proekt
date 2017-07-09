@@ -10,19 +10,28 @@ class Configurable;
 
 class ConfigObserver;
 
+
 class ConfigLoader {
 public:
-  ConfigLoader();
 
-  virtual QSettings *createConfigInstance(const QString &organisation, const QString &application) = 0;
+  ConfigLoader(const QString &conf_branch);
+
+  virtual QSettings *createConfigInstance(const QString &organisation = default_org_name,
+                                          const QString &application = default_app_name) = 0;
 
   void registerConfigHolder(Configurable *config_holder);
 
   void unregisterConfigHolder(Configurable *config_holder);
 
+  const QString &getConfigBranch() const;
+
+
   virtual  ~ConfigLoader();
 
 private:
+  static QString default_org_name;
+  static QString default_app_name;
+  QString _config_branch;
   ConfigObserver *_observer;
 };
 

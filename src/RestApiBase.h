@@ -6,16 +6,20 @@
 #include <QtCore/QUrlQuery>
 #include "ReplyWrapper.h"
 #include "AuthorizationController.h"
+#include "Configurable.h"
 
 //TODO: add QSettings management , implement interface for it
-class RestApiBase : public QObject {
+class RestApiBase : public Configurable {
 Q_OBJECT
 public:
   explicit RestApiBase(QObject *parent = nullptr);
+
+
   RestApiBase(QOAuth2AuthorizationCodeFlow *authorizer, QObject *parent = nullptr);
+
   bool isTokenFresh() const;
 
-  void grantAccess();
+  void grantAccess(bool forced = false);
 
   QString token() const;
 
@@ -28,6 +32,8 @@ signals:
   void replyNetworkError(const QString &error_msg, QNetworkReply::NetworkError error) const;
 
   void error(const QString &error_msg) const;
+
+  void authorized() const;
 
 protected slots:
 
@@ -52,7 +58,9 @@ protected:
 
   virtual void modifyRequest(QNetworkRequest &request) const;
 
-  virtual void handleError(QNetworkReply *reply) const;
+  virtual void handleError(QNetworkReply *reply);
+
+  virtual void handleConfigChange(QSettings *new_config) override;
 
 private:
   template<typename InputData>
@@ -71,7 +79,7 @@ private:
                                 const QUrlQuery params = QUrlQuery(),
                                 QNetworkAccessManager::Operation request_type = QNetworkAccessManager::GetOperation);
 
-  mutable bool is_auth_process_started;
+  mutable std::atomic_flag is_auth_process_started;
   QOAuth2AuthorizationCodeFlow *_oauth;
 };
 

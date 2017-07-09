@@ -1,5 +1,6 @@
 #include "RestApiBase.h"
 #include "QOAuth2.h"
+#include "RestApiConfigLoader.h"
 
 
 template<>
@@ -12,30 +13,32 @@ QNetworkReply *RestApiBase::performRequest<std::nullptr_t>(const QNetworkRequest
 
 //TODO: check manager for nullptr
 RestApiBase::RestApiBase(QObject *parent)
-  : RestApiBase{new QOAuth2(this), parent} {
+    : RestApiBase{new QOAuth2{}, parent} {
+
 }
 
 
 RestApiBase::RestApiBase(QOAuth2AuthorizationCodeFlow *authorizer, QObject *parent)
-  : QObject{parent},
-    _oauth{authorizer},
-    is_auth_process_started{false} {
-  grantAccess();
+    : Configurable{parent, new RestApiConfigLoader{}},
+      _oauth{authorizer},
+      is_auth_process_started{false} {
+  qDebug() << "api base constructor";
   auto *network_manager = _oauth->networkAccessManager();
   QObject::connect(network_manager, &QNetworkAccessManager::finished, this, &RestApiBase::handleReply);
+  _oauth->setParent(this);
 }
 
-void RestApiBase::grantAccess() {
-  if (is_auth_process_started) {
+void RestApiBase::grantAccess(bool forced) {
+  if (is_auth_process_started.test_and_set(std::memory_order_acquire)) {
     return;
   }
-  is_auth_process_started = true;
-  auto *auth = new AuthorizationController{_oauth, this};
-  auth->grant();
+  AuthorizationController *auth = new AuthorizationController{_oauth, this};
+  auth->grant(forced);
   QObject::connect(auth, &AuthorizationController::authenticated, [this, auth] {
     qDebug() << _oauth->token() << ' ' << _oauth->expirationAt();
     auth->deleteLater();
-    is_auth_process_started = false;
+    is_auth_process_started.clear(std::memory_order_release);
+    emit authorized();
   });
 }
 
@@ -81,7 +84,7 @@ QNetworkReply *RestApiBase::put(const QUrl &url, const QByteArray &data, const Q
 }
 
 bool RestApiBase::isTokenFresh() const {
-  return _oauth->token() != "" && _oauth->expirationAt() < QDateTime::currentDateTime();
+  return _oauth->token() != "" && _oauth->expirationAt() > QDateTime::currentDateTime();
 }
 
 QString RestApiBase::token() const {
@@ -99,7 +102,7 @@ void RestApiBase::handleReply(QNetworkReply *reply) {
   return;
 }
 
-void RestApiBase::handleError(QNetworkReply *reply) const {
+void RestApiBase::handleError(QNetworkReply *reply) {
   return;
 }
 
@@ -157,4 +160,7 @@ QNetworkReply *RestApiBase::performRequest(const QNetworkRequest &request,
   }
 }
 
+void RestApiBase::handleConfigChange(QSettings *new_config) {
+  //Do nothing
+}
 

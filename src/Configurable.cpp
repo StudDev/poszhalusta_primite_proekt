@@ -4,15 +4,17 @@
 const QString Configurable::application_name = "yds";
 const QString Configurable::organization_name = "TopCodersTeam";
 
-Configurable::Configurable(ConfigLoader *loader)
-  : _config(nullptr),
-    _loader(nullptr) {
+Configurable::Configurable(QObject *parent, ConfigLoader *loader)
+    : QObject{parent},
+      _config{nullptr},
+      _loader{nullptr} {
   loadConfig(loader);
 }
 
-Configurable::Configurable()
-  : _config(nullptr),
-    _loader(nullptr) {
+Configurable::Configurable(QObject *parent)
+    : QObject{parent},
+      _config{nullptr},
+      _loader{nullptr} {
 }
 
 void Configurable::changeConfigSlot(QSettings *new_config) {
@@ -34,7 +36,7 @@ QSettings *Configurable::getConfig() const {
 
 void Configurable::loadConfig(ConfigLoader *customLoader) {
   if (_config != nullptr) {
-    _loader->unregisterConfigHolder(this);
+    _config->deleteLater();
   }
   if (customLoader != nullptr) {
     if (_loader != nullptr) {
@@ -47,7 +49,9 @@ void Configurable::loadConfig(ConfigLoader *customLoader) {
   _loader->registerConfigHolder(this);
 }
 
-void Configurable::reloadConfig() {
+void Configurable::reloadConfig(ConfigLoader *customLoader) {
+  delete _loader;
+  _loader = customLoader;
   _config->deleteLater();
   _config = _loader->createConfigInstance(organization_name, application_name);
   _config->setParent(this);
@@ -69,4 +73,8 @@ bool Configurable::confContains(const QString &key) {
 
 QVariant Configurable::getConfValue(const QString &key, const QVariant &defaultValue) const {
   return _config->value(key, defaultValue);
+}
+
+void Configurable::handleConfigChange(QSettings *new_config) {
+  throw std::runtime_error("Configurable::handleConfigChange Called");
 }
