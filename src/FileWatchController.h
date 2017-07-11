@@ -36,13 +36,13 @@ public:
 
   ~FileWatchController();
 
-  void addDirectory(const QDir &arg);
+  void AddDirectory(const QDir &arg);
 
-  void removeDirectory(const QDir &arg);
+  void RemoveDirectory(const QDir &arg);
 
-  void stopWatch();
+  void StopWatch();
 
-  void startWatch();
+  void StartWatch();
 
 signals:
 
@@ -61,7 +61,7 @@ private:
   FileWatch *watcher = nullptr;
 
   //we use 2 hashtables to have fast access both by directory and filewatch descriptor
-  //this could be a single boost::bimap
+  //this provides a simple safety for operations "add directory" "remove directory"
   QHash<QString, int> hash_by_directory_;
   QHash<int, QString> hash_by_descriptor_;
 

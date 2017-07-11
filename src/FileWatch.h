@@ -32,7 +32,7 @@
 
 
 //TODO: FSEvent signal and lazy_initialization
-class FileWatch : public QThread {
+class FileWatch : public QObject {
 Q_OBJECT
 public:
   explicit FileWatch(int inotify_descriptor,
@@ -42,24 +42,18 @@ public:
 
   ~FileWatch();
 
-  bool initialize();
-  void uninitialize();
+
 
 public slots:
-  void run() Q_DECL_OVERRIDE;
+  void StartWatch();
 
 signals:
-  void watchFinished();
+  void WatchFinished();
 
-  void FileWatchInitError(int error_code);
-
-  void FileWatchError();
-
-  void FileWatchWrongArgument();
-
-  void FileWatchDirectoryAlreadyAdded();
-
+  void FileWatchError(QString error_description);
 protected:
+
+
   const static auto WATCH_FLAGS_ = (IN_CREATE | IN_DELETE | IN_DELETE_SELF |
                                     IN_MODIFY | IN_MOVE_SELF | IN_MOVE | IN_DONT_FOLLOW);
   const static auto MAX_INOTIFY_EVENT_SIZE = sizeof(inotify_event) + NAME_MAX + 1;
@@ -69,9 +63,9 @@ protected:
   void HandleSingleEvent(const inotify_event& event) const;
   bool FilterByName(const inotify_event& event) const;
 
+  void Initialize();
+  void Uninitialize();
 
-  //we use 2 hashtables to have fast access both by directory and filewatch descriptor
-  //this could be a single boost::bimap
   QHash<int, QString> &hash_by_descriptor_;
 
   //file descriptors, returned by inotify and epoll initialization functions
@@ -80,7 +74,7 @@ protected:
   int control_pipe_descriptor_;
   int local_errno_;
 
-  bool initialized_ = false;
+  bool initialized_;
 };
 
 

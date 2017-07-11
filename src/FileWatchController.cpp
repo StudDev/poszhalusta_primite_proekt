@@ -12,7 +12,7 @@ FileWatchController::~FileWatchController() {
   close(inotify_descriptor_);
 }
 
-void FileWatchController::addDirectory(const QDir &arg) {
+void FileWatchController::AddDirectory(const QDir &arg) {
   if (!arg.exists()) {
     qDebug() << "Directory doesn't exist: " << arg;
     emit WrongArgument();
@@ -38,7 +38,7 @@ void FileWatchController::addDirectory(const QDir &arg) {
   hash_by_descriptor_.insert(temp_watch_descriptor, arg.canonicalPath());
 }
 
-void FileWatchController::removeDirectory(const QDir &arg) {
+void FileWatchController::RemoveDirectory(const QDir &arg) {
 
   //check for existence argument directory in list of watched directories
   if (!hash_by_directory_.contains(arg.canonicalPath())) {
@@ -66,7 +66,7 @@ void FileWatchController::removeDirectory(const QDir &arg) {
   hash_by_directory_.remove(arg.canonicalPath());
 }
 
-void FileWatchController::startWatch() {
+void FileWatchController::StartWatch() {
 
   //protection against second run over the current
   if (process_status_) {
@@ -90,7 +90,7 @@ void FileWatchController::startWatch() {
   watcher->run();
 }
 
-void FileWatchController::stopWatch() {
+void FileWatchController::StopWatch() {
   qDebug() << "Trying to stop watch";
   if (!process_status_) {
     qDebug() << "Warning: watcher already stopped";

@@ -11,22 +11,23 @@ FileWatch::FileWatch(int inotify_descriptor,
         QThread(parent),
         hash_by_descriptor_(hash_by_descriptor),
         inotify_descriptor_(inotify_descriptor),
-        control_pipe_descriptor_(control_pipe_descriptor) { }
+        control_pipe_descriptor_(control_pipe_descriptor),
+        initialized_(false){ }
 
 
 FileWatch::~FileWatch() {
   qDebug() << "Watcher deleted";
 }
 
-bool FileWatch::initialize() {
-  if(initialized_ == true)
-    return true;
+void FileWatch::Initialize() {
+  if(initialized_)
+    return;
 
   epoll_descriptor_ = epoll_create1(0);
   if (-1 == epoll_descriptor_) {
     local_errno_ = errno;
-    emit FileWatchInitError(local_errno_);
-    return false;
+    emit FileWatchError("Epoll initialization fail\n");
+    return;
   }
 
   epoll_event inotify_ev;
@@ -39,57 +40,56 @@ bool FileWatch::initialize() {
   pipe_ev.data.fd = control_pipe_descriptor_;
 
   if (-1 == epoll_ctl(epoll_descriptor_, EPOLL_CTL_ADD, inotify_descriptor_, &inotify_ev)) {
-    qDebug() << "epoll_ctl inotify addition error";
-    emit FileWatchError();
-    return false;
+    qDebug() << "epoll_ctl inotify adding error";
+    emit FileWatchError("inotify epolling failed on FileWatch:Initialize");
+    return;
   }
 
   if (-1 == epoll_ctl(epoll_descriptor_, EPOLL_CTL_ADD, pipe_ev.data.fd, &pipe_ev)) {
-    qDebug() << "epoll_ctl pipe addition error";
-    emit FileWatchError();
-    return false;
+    qDebug() << "epoll_ctl pipe adding error";
+    emit FileWatchError("control pipe epolling failed on FileWatch::Initialize");
+    return;
   }
 
   initialized_ = true;
-  return true;
+  return;
 }
 
-void FileWatch::uninitialize() {
-
+void FileWatch::Uninitialize() {
+  //epolls doesn't require closing/uninitialization
 }
 
-void FileWatch::run() {
+void FileWatch::StartWatch() {
+  Initialize();
+
+  if(!initialized_) {
+    return;
+  }
+
   epoll_event events[MAX_EPOLL_EVENTS];
 
-  bool exit_flag = false;
   while (true) {
     int events_available = epoll_wait(epoll_descriptor_, events, MAX_EPOLL_EVENTS, -1);
 
     if (-1 == events_available) {
-
       qDebug() << "epoll wait failed";
+      emit FileWatchError("epoll wait failed on FileWathch:StartWatch\n");
       return;
-      emit FileWatchError();
     }
+
     for (int i = 0; i < events_available; ++i) {
       if (events[i].data.fd == inotify_descriptor_) {
         HandleEvents();
       }
-
       if (events[i].data.fd == control_pipe_descriptor_) {
         char temp_symbol;
         while (read(STDIN_FILENO, &temp_symbol, 1) > 0 && temp_symbol != '\n') {
           continue;
         }
-        exit_flag = true;
-        qDebug() << "Listening finished";
-        emit watchFinished();
-        break;
+        qDebug() << "Listening (watch) finished";
+        emit WatchFinished();
+        return;
       }
-    }
-
-    if (exit_flag) {
-      break;
     }
   }
 }
@@ -104,11 +104,11 @@ void FileWatch::HandleEvents() {
     //eagain means "no data available" so we skip this error
     if (-1 == read_len && errno != EAGAIN) {
       qDebug() << "Inotify descriptor read failure";
-      emit FileWatchError();
+      emit FileWatchError("Read from inotify failed on FileWatch::HandleEvents\n");
       return;
     }
 
-    //we read the entire buffer
+    //we already read the entire buffer
     if (read_len <= 0) {
       break;
     }
@@ -124,7 +124,7 @@ void FileWatch::HandleEvents() {
 
       event = static_cast<inotify_event *>(unread_events_ptr);
 
-      //filter to avoid unix - temporary files beginning with "."
+      //filter to avoid unix special files beginning with "."
       if (event->len) {
         if(FilterByName(*event))
           continue;
