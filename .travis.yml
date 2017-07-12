@@ -1,0 +1,13 @@
+language: cpp
+dist: trusty
+sudo: required
+compiler: clang
+notifications:
+    slack: top-programmers-team:eTt39t0p1fLisphx9IYkR3yj
+before_install:
+  - sudo add-apt-repository ppa:beineri/opt-qt58-trusty -y
+  - sudo apt-get update -q
+  - sudo apt-get install qt58base qt58networkauth-no-lgpl qt58webengine qt58quickcontrols2 -y
+  - source /opt/qt58/bin/qt58-env.sh
+script:
+  echo "int main(){}" >> src/main.cpp && cmake . && cmake --build .

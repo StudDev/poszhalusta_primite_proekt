@@ -3,8 +3,11 @@
 #define YDS_FILEWATCH_H
 
 #include <QDebug>
+#include <string.h>
 
 #include <QtCore/QObject>
+
+#include <QThread>
 
 #include <QString>
 #include <QRegExp>
@@ -28,43 +31,50 @@
 #include <cerrno>
 
 
-//TODO: FSEvent signal
+//TODO: FSEvent signal and lazy_initialization
 class FileWatch : public QObject {
-    Q_OBJECT
+Q_OBJECT
 public:
-    explicit FileWatch(QObject *parent = nullptr);
-    ~FileWatch();
-    //void AddRecursiveDirectory(QDir& arg);
-    void AddDirectory(const QDir& arg);
-    //void AddFile(QDir& arg);
-    void RemoveDirectory(const QDir& arg);
-    void StartWatch();
+  explicit FileWatch(int inotify_descriptor,
+                     int control_pipe_descriptor,
+                     QHash<int, QString> &hash_by_descriptor,
+                     QThread *parent = nullptr);
+
+  ~FileWatch();
+
+
+
+public slots:
+  void StartWatch();
+
 signals:
-    void FileWatchInitError();
-    void FileWatchError();
-    void FileWatchWrongArgument();
-    void FileWatchDirectoryAlreadyAdded();
+  void WatchFinished();
 
+  void FileWatchError(QString error_description);
 protected:
-    const static auto WATCH_FLAGS_ = (IN_CREATE | IN_DELETE | IN_DELETE_SELF |
-                                      IN_MODIFY | IN_MOVE_SELF | IN_MOVE | IN_DONT_FOLLOW);
-    const static auto MAX_INOTIFY_EVENT_SIZE = sizeof(inotify_event) + NAME_MAX + 1;
-    const static int MAX_EPOLL_EVENTS = 10;
-
-    void HandleEvents();
 
 
-    //we use 2 hashtables to have fast access both by directory and filewatch descriptor
-    //this could be a single boost::bimap
-    QHash<QString, int> hash_by_directory_;
-    QHash<int, QString> hash_by_descriptor_;
+  const static auto WATCH_FLAGS_ = (IN_CREATE | IN_DELETE | IN_DELETE_SELF |
+                                    IN_MODIFY | IN_MOVE_SELF | IN_MOVE | IN_DONT_FOLLOW);
+  const static auto MAX_INOTIFY_EVENT_SIZE = sizeof(inotify_event) + NAME_MAX + 1;
+  const static int MAX_EPOLL_EVENTS = 10;
 
-    //file descriptors, returned by inotify and epoll initialization functions
-    int inotify_descriptor_;
-    int epoll_descriptor_;
-    int local_errno_;
+  void HandleEvents();
+  void HandleSingleEvent(const inotify_event& event) const;
+  bool FilterByName(const inotify_event& event) const;
 
+  void Initialize();
+  void Uninitialize();
 
+  QHash<int, QString> &hash_by_descriptor_;
+
+  //file descriptors, returned by inotify and epoll initialization functions
+  int inotify_descriptor_;
+  int epoll_descriptor_;
+  int control_pipe_descriptor_;
+  int local_errno_;
+
+  bool initialized_;
 };
 
 

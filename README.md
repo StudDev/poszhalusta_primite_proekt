@@ -1,4 +1,5 @@
 # Yandex Disk Sync Tool
+[![Build Status](https://travis-ci.org/oleggator/poszhalusta_primite_proekt.svg?branch=master)](https://travis-ci.org/oleggator/poszhalusta_primite_proekt)
 
 ## Links
 * [Qt docs](http://doc.qt.io/qt-5/)
