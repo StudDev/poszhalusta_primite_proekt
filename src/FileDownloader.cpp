@@ -2,19 +2,24 @@
 #include "FileDownloader.h"
 
 FileDownloader::FileDownloader(const QString &path, QObject *parent)
-  : ReplyWrapper{parent},
-    file{path},
-    _tempfile_suffix{".tmp"}{
-  QDir().mkpath(QFileInfo(file).absolutePath());
+    : ReplyWrapper{parent},
+      file{path},
+      _tempfile_suffix{".tmp"} {
+
+  QFileInfo file_info{file};
+  auto filepath = file_info.absolutePath() + '/';
+  QDir().mkpath(filepath);
+  filepath.append(file_info.fileName().prepend('.'));
   if (file.exists()) {
-    qDebug() << file.fileName() << "exists";
-    file.setFileName(path + _tempfile_suffix);
+    file.setFileName(filepath + _tempfile_suffix);
+  } else {
+    file.setFileName(filepath);
   }
   file.open(QIODevice::WriteOnly);
 }
 
 FileDownloader::FileDownloader(const QString &path, QNetworkReply *reply, QObject *parent)
-  : FileDownloader{path, parent} {
+    : FileDownloader{path, parent} {
   setReply(reply);
 }
 
@@ -42,5 +47,6 @@ FileDownloader::~FileDownloader() {
 
 //TODO: make ".tmp" const
 void FileDownloader::handleFinishedReply() {
-  file.rename(file.fileName().remove(_tempfile_suffix));
+  file.rename(QFileInfo(file).absolutePath().append(
+      QFileInfo(file).fileName().remove(0, 1).remove(_tempfile_suffix).prepend('/')));
 }

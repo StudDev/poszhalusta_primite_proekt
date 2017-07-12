@@ -4,7 +4,6 @@
 
 #include <QtCore/QObject>
 
-
 #include "YaDRestApi.h"
 
 struct ResourceRow {
@@ -13,16 +12,20 @@ struct ResourceRow {
   QDateTime last_modified;
 };
 
-class LocalSyncMaster : public QObject {
+class LocalSyncMaster : public Configurable {
 Q_OBJECT
 public:
 
   LocalSyncMaster(YaDRestApi *api, QObject *parent = nullptr);
 
-
   void forceSync();
 
   ~LocalSyncMaster();
+
+protected:
+  virtual void loadConfigVariables() override;
+
+  void handleConfigChange(QSettings *new_config) override;
 
 private slots:
 
@@ -31,14 +34,19 @@ private slots:
   void mergeResources();
 
 private:
+
   JsonReplyWrapper *getRemoteResources();
 
   void getLocalResources();
 
   YaDRestApi *_api;
-  QSettings *_config;
   QList<ResourceRow> _remote_resources;
   QList<ResourceRow> _local_resources;
+  struct {
+    QString remote_root;
+    QString local_root;
+    QStringList watching_dirs;
+  } _conf_vars;
 };
 
 

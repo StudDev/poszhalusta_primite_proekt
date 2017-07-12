@@ -8,9 +8,12 @@
 #include <QtNetworkAuth>
 #include <QNetworkAccessManager>
 #include <QtCore/QSettings>
+#include "Configurable.h"
 
+namespace {
 
-class AuthorizationController : public QObject {
+}
+class AuthorizationController : public Configurable {
 Q_OBJECT
 public:
   AuthorizationController(QObject *parent = nullptr);
@@ -23,14 +26,16 @@ public:
 
   bool openUrl(const QUrl &url);
 
-  void grant();
+  void grant(bool cleanup);
 
   QOAuth2AuthorizationCodeFlow *getOAuth2AuthorizationCodeFlow() const;
 
-  QUrl _auth_url;
-
   bool isExpired();
 
+protected:
+  void handleConfigChange(QSettings *new_config) override;
+
+  void loadConfigVariables() override;
 signals:
 
   void authenticated();
@@ -40,12 +45,18 @@ public slots:
   void log(const QUrl &url);
 
 private:
-
+  struct {
+    QString authorization_url{"https://oauth.yandex.ru/authorize"};
+    QString token_url{"https://oauth.yandex.ru/token"};
+    unsigned oauth_port{9980};
+  } _conf_vars;
   void oauthAutoInit();
 
+  bool time_set{false};
+  bool token_set{false};
   QQuickView _view;
   QOAuth2AuthorizationCodeFlow *_oauth2;
-  QSettings _settings;
+
 };
 
 #endif // AUTHORIZATION_CONTROLLER_H
