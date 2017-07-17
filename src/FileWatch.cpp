@@ -1,18 +1,14 @@
-//
-// Created by alting on 07.05.17.
-//
-
 #include "FileWatch.h"
 
 FileWatch::FileWatch(int inotify_descriptor,
                      int control_pipe_descriptor,
                      QHash<int, QString> &hash_by_descriptor,
-                     QThread *parent) :
-        QThread(parent),
-        hash_by_descriptor_(hash_by_descriptor),
-        inotify_descriptor_(inotify_descriptor),
-        control_pipe_descriptor_(control_pipe_descriptor),
-        initialized_(false){ }
+                     QObject *parent) :
+    QObject{parent},
+    hash_by_descriptor_{hash_by_descriptor},
+    inotify_descriptor_{inotify_descriptor},
+    control_pipe_descriptor_{control_pipe_descriptor},
+    initialized_{false} {}
 
 
 FileWatch::~FileWatch() {
@@ -20,7 +16,7 @@ FileWatch::~FileWatch() {
 }
 
 void FileWatch::Initialize() {
-  if(initialized_)
+  if (initialized_)
     return;
 
   epoll_descriptor_ = epoll_create1(0);
@@ -46,7 +42,7 @@ void FileWatch::Initialize() {
   }
 
   if (-1 == epoll_ctl(epoll_descriptor_, EPOLL_CTL_ADD, pipe_ev.data.fd, &pipe_ev)) {
-    qDebug() << "epoll_ctl pipe adding error";
+    qDebug() << "epoll_ctl pipe adding error" << strerror(errno);
     emit FileWatchError("control pipe epolling failed on FileWatch::Initialize");
     return;
   }
@@ -61,16 +57,15 @@ void FileWatch::Uninitialize() {
 
 void FileWatch::StartWatch() {
   Initialize();
-
-  if(!initialized_) {
+  if (!initialized_) {
     return;
   }
 
+  qDebug() << " FileWatch::StartWatch Initialize() success";
   epoll_event events[MAX_EPOLL_EVENTS];
 
   while (true) {
     int events_available = epoll_wait(epoll_descriptor_, events, MAX_EPOLL_EVENTS, -1);
-
     if (-1 == events_available) {
       qDebug() << "epoll wait failed";
       emit FileWatchError("epoll wait failed on FileWathch:StartWatch\n");
@@ -121,24 +116,26 @@ void FileWatch::HandleEvents() {
     //so at the moment of advancing we have already initialized "event->len"
     for (unread_events_ptr = buf; unread_events_ptr < buf + read_len;
          unread_events_ptr += sizeof(inotify_event) + event->len) {
-
       event = static_cast<inotify_event *>(unread_events_ptr);
-
       //filter to avoid unix special files beginning with "."
       if (event->len) {
-        if(FilterByName(*event))
+        if (FilterByName(*event)) {
           continue;
+        }
       }
 
       HandleSingleEvent(*event);
     }
   }
 }
+
 //this function is currently in debug version: later all qDebug() calls will be replaced with
 //signals in special form
 void FileWatch::HandleSingleEvent(const inotify_event &event) const {
+  auto event_str = GetEventStr(event);
   if (event.mask & IN_CREATE) {
     qDebug() << "IN_CREATE: ";
+    emit createdEvent(event_str, (event.mask & IN_ISDIR) != 0);
   }
   if (event.mask & IN_DELETE) {
     qDebug() << "IN_DELETE: ";
@@ -148,17 +145,22 @@ void FileWatch::HandleSingleEvent(const inotify_event &event) const {
   }
   if (event.mask & IN_MODIFY) {
     qDebug() << "IN_MODIFY: ";
+    emit modifiedEvent(event_str);
   }
   if (event.mask & IN_MOVE_SELF) {
     qDebug() << "IN_MOVE_SELF: ";
   }
+
   if (event.mask & IN_MOVED_FROM) {
     qDebug() << "Cookie: " << event.cookie;
     qDebug() << "IN_MOVED_FROM: ";
+    emit movedFromEvent(event.cookie, event_str);
   }
+
   if (event.mask & IN_MOVED_TO) {
     qDebug() << "Cookie: " << event.cookie;
     qDebug() << "IN_MOVED_TO: ";
+    emit movedToEvent(event.cookie, event_str);
   }
 
   qDebug() << hash_by_descriptor_.value(event.wd);
@@ -173,6 +175,15 @@ void FileWatch::HandleSingleEvent(const inotify_event &event) const {
 bool FileWatch::FilterByName(const inotify_event &event) const {
   QString name = event.name;
   QRegExp check_reg("^(?![.])(?!.*[-_.]$).+");
-  if (!check_reg.exactMatch(name))
-    return true;
+  return !check_reg.exactMatch(name);
+}
+
+QString FileWatch::GetEventStr(const inotify_event &event) const {
+
+  QString event_str{hash_by_descriptor_.value(event.wd)};
+  event_str.append('/');
+  if (event.len != 0) {
+    event_str.append(event.name);
+  }
+  return event_str;
 }

@@ -21,6 +21,8 @@ public:
 
   QSettings *getConfig() const;
 
+  const QString &getConfigBranch() const;
+
   void confSetValue(const QString &key, const QVariant &value);
 
   void confRemoveKey(const QString &key);
@@ -33,14 +35,14 @@ public:
 
 public slots:
 
-  void changeConfigSlot(QSettings *new_config);
+  void changeConfigSlot(const QString &changed_branch);
 
 signals:
 
-  void configChanged(QSettings *_config);
+  void configChanged(const QString &config_branch);
 
 protected:
-  virtual void handleConfigChange(QSettings *new_config);
+  virtual void handleConfigChange();
 
   virtual void loadConfigVariables() = 0;
 

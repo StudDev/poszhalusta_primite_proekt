@@ -101,11 +101,12 @@ void LocalSyncMaster::mergeResources() {
       toRemote.push_back(local);
     }
   }
+
   for (auto &i : _remote_resources) {
     toLocal.push_back(i);
   }
+
   for (auto &i : toLocal) {
-    qDebug() << i.path;
     auto target = i.path;
     QUrlQuery query;
     query.addQueryItem("path", target.replace(_conf_vars.local_root, _conf_vars.remote_root));
@@ -122,7 +123,7 @@ void LocalSyncMaster::loadConfigVariables() {
   _conf_vars.remote_root = getConfValue("remoteroot", _conf_vars.remote_root).toString();
 }
 
-void LocalSyncMaster::handleConfigChange(QSettings *new_config) {
+void LocalSyncMaster::handleConfigChange() {
   auto prevConf = _conf_vars;
   loadConfigVariables();
   bool isDifferentLocalRoots = _conf_vars.local_root != prevConf.local_root;

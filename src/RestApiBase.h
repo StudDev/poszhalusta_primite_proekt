@@ -60,7 +60,7 @@ protected:
 
   virtual void handleError(QNetworkReply *reply);
 
-  virtual void handleConfigChange(QSettings *new_config) override;
+  virtual void handleConfigChange() override;
 
 private:
   template<typename InputData>

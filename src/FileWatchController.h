@@ -1,7 +1,3 @@
-//
-// Created by alting on 10.05.17.
-//
-
 #ifndef YDS_FILEWATCHCONTROLLER_H
 #define YDS_FILEWATCHCONTROLLER_H
 
@@ -26,8 +22,6 @@
 //for using ernno (last error)
 #include <cerrno>
 
-
-//TODO: this class
 class FileWatchController : public QObject {
 Q_OBJECT
 
@@ -44,15 +38,28 @@ public:
 
   void StartWatch();
 
+  FileWatch *getWatcher() const {
+    return watcher;
+  }
+
+
 signals:
 
   void FileWatchControllerError(int error);
 
   void WrongArgument();
 
-private:
-  bool initialize();
+  void startWatchingProcess();
 
+  void movedToEvent(unsigned cookie, const QString &name) const;
+
+  void movedFromEvent(unsigned cookie, const QString &name) const;
+
+  void modifiedEvent(const QString &name) const;
+
+  void createdEvent(const QString &name, bool is_directory) const;
+
+private:
   const static auto WATCH_FLAGS_ = (IN_CREATE | IN_DELETE | IN_DELETE_SELF |
                                     IN_MODIFY | IN_MOVE_SELF | IN_MOVE | IN_DONT_FOLLOW);
   const static auto MAX_INOTIFY_EVENT_SIZE = sizeof(inotify_event) + NAME_MAX + 1;
@@ -71,7 +78,7 @@ private:
   int pipe_descriptors_[2];
   bool process_status_ = false;
   bool initialized_ = false;
-
+  QThread worker_thread;
 };
 
 

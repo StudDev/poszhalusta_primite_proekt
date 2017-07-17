@@ -1,18 +1,18 @@
-//
-// Created by alting on 10.05.17.
-//
-
 #include "FileWatchController.h"
 
-FileWatchController::FileWatchController(QObject *parent) : QObject(parent) {
+FileWatchController::FileWatchController(QObject *parent)
+    : QObject(parent) {
   inotify_descriptor_ = inotify_init1(IN_NONBLOCK);
 }
 
 FileWatchController::~FileWatchController() {
   close(inotify_descriptor_);
+  worker_thread.quit();
+  worker_thread.wait();
 }
 
 void FileWatchController::AddDirectory(const QDir &arg) {
+  qDebug() << "Add Directory";
   if (!arg.exists()) {
     qDebug() << "Directory doesn't exist: " << arg;
     emit WrongArgument();
@@ -26,7 +26,7 @@ void FileWatchController::AddDirectory(const QDir &arg) {
   }
 
   int temp_watch_descriptor = inotify_add_watch(inotify_descriptor_,
-                                                arg.canonicalPath().toStdString().c_str(), WATCH_FLAGS_);
+                                                arg.canonicalPath().toLocal8Bit().data(), WATCH_FLAGS_);
   if (-1 == temp_watch_descriptor) {
     local_errno_ = errno;
     qDebug() << "Adding watch failed: unknown error";
@@ -36,6 +36,9 @@ void FileWatchController::AddDirectory(const QDir &arg) {
 
   hash_by_directory_.insert(arg.canonicalPath(), temp_watch_descriptor);
   hash_by_descriptor_.insert(temp_watch_descriptor, arg.canonicalPath());
+  for (auto &i :hash_by_descriptor_) {
+    qDebug() << i.toLocal8Bit();
+  }
 }
 
 void FileWatchController::RemoveDirectory(const QDir &arg) {
@@ -67,7 +70,6 @@ void FileWatchController::RemoveDirectory(const QDir &arg) {
 }
 
 void FileWatchController::StartWatch() {
-
   //protection against second run over the current
   if (process_status_) {
     qDebug() << "Warning: watcher already started";
@@ -83,11 +85,17 @@ void FileWatchController::StartWatch() {
     return;
     //return
   }
-  process_status_ = true;
-
   watcher = new FileWatch(inotify_descriptor_, pipe_descriptors_[0], hash_by_descriptor_);
-  watcher->initialize();
-  watcher->run();
+  connect(&worker_thread, &QThread::finished, watcher, &QObject::deleteLater);
+  connect(this, &FileWatchController::startWatchingProcess, watcher, &FileWatch::StartWatch);
+  connect(watcher, &FileWatch::movedToEvent, this, &FileWatchController::movedToEvent);
+  connect(watcher, &FileWatch::movedFromEvent, this, &FileWatchController::movedFromEvent);
+  connect(watcher, &FileWatch::createdEvent, this, &FileWatchController::createdEvent);
+  connect(watcher, &FileWatch::modifiedEvent, this, &FileWatchController::modifiedEvent);
+  watcher->moveToThread(&worker_thread);
+  worker_thread.start();
+  process_status_ = true;
+  emit startWatchingProcess();
 }
 
 void FileWatchController::StopWatch() {
@@ -100,6 +108,4 @@ void FileWatchController::StopWatch() {
   char buf = '\n';
   write(pipe_descriptors_[1], &buf, 1);
   process_status_ = false;
-  delete[] watcher;
-  watcher = nullptr;
 }

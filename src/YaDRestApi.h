@@ -50,7 +50,7 @@ protected:
 
   void handleError(QNetworkReply *reply) override;
 
-  void handleConfigChange(QSettings *new_config) override;
+  void handleConfigChange() override;
 
   void loadConfigVariables() override;
 

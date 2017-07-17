@@ -25,7 +25,7 @@ public:
 protected:
   virtual void loadConfigVariables() override;
 
-  void handleConfigChange(QSettings *new_config) override;
+  void handleConfigChange() override;
 
 private slots:
 

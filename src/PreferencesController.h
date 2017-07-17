@@ -8,7 +8,7 @@
 class PreferencesController : public Configurable {
 Q_OBJECT
 protected:
-  void handleConfigChange(QSettings *new_config) override;
+  void handleConfigChange() override;
 
   void loadConfigVariables() override;
 

@@ -39,9 +39,9 @@ void PreferencesController::recursiveAddFolder(QStringList &foldersList, const Q
   QDir root(rootFolder);
   foldersList << root.canonicalPath();
   qDebug() << root.canonicalPath() + " is added to config";
-
-  for (const QString &folderPath: root.entryList(QDir::AllDirs | QDir::NoSymLinks | QDir::NoDotAndDotDot))
+  for (const QString &folderPath: root.entryList(QDir::AllDirs | QDir::NoSymLinks | QDir::NoDotAndDotDot)) {
     recursiveAddFolder(foldersList, root.filePath(folderPath));
+  }
 }
 
 void PreferencesController::show() { _view.show(); }
@@ -54,7 +54,7 @@ const QQuickView *PreferencesController::getView() const { return &_view; }
 
 void PreferencesController::log(const QString &msg) const { qDebug() << msg; }
 
-void PreferencesController::handleConfigChange(QSettings *new_config) {
+void PreferencesController::handleConfigChange() {
   auto oldVars = _conf_vars;
   loadConfigVariables();
   if (_conf_vars.local_root != oldVars.local_root) {
@@ -63,6 +63,8 @@ void PreferencesController::handleConfigChange(QSettings *new_config) {
 }
 
 void PreferencesController::loadConfigVariables() {
-  _conf_vars.watching_dirs = getConfValue("watchingDirs", _conf_vars.watching_dirs).toStringList();
   _conf_vars.local_root = getConfValue("localroot", _conf_vars.local_root).toString();
+  _conf_vars.remote_root = getConfValue("remoteroot", _conf_vars.remote_root).toString();
+  _conf_vars.watching_dirs = getConfValue("watchingDirs", _conf_vars.watching_dirs).toStringList();
 }
+

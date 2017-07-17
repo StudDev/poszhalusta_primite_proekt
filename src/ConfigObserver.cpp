@@ -3,13 +3,14 @@
 
 ConfigObserver *ConfigObserver::_self = nullptr;
 
-void ConfigObserver::pushNotification(QSettings *new_config) {
-  emit notify(new_config);
+void ConfigObserver::pushNotification(const QString &config_branch) {
+  emit notify(config_branch);
 }
 
 void ConfigObserver::addConfigHolder(Configurable *config_holder) {
   auto *config_instance = config_holder->getConfig();
   auto self_instance = getInstance();
+  auto &config_branch = config_holder->getConfigBranch();
   self_instance->_config_holders.insert(config_instance, config_holder);
   QObject::connect(config_holder, &Configurable::configChanged, self_instance, &ConfigObserver::pushNotification);
   QObject::connect(self_instance, &ConfigObserver::notify, config_holder, &Configurable::changeConfigSlot);
@@ -36,9 +37,7 @@ ConfigObserver *ConfigObserver::getInstance() {
 }
 
 ConfigObserver::ConfigObserver(QObject *parent)
-    : QObject{parent},
-      _config_holders{QHash<QSettings *, Configurable *>()} {
-  qDebug() << "Creating Singleton";
+    : QObject{parent} {
 }
 
 ConfigObserver::~ConfigObserver() {

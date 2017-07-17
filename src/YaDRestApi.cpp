@@ -90,6 +90,7 @@ ReplyWrapper *YaDRestApi::downloadFile(const QString &localpath, const QUrlQuery
   auto target_url = _main_url.resolved(_conf_vars.download_file_url);
 
   QNetworkReply *download_url_reply = get(target_url, params);
+  download_url_reply->setParent(this);
   FileDownloader *handler{new FileDownloader{localpath}};
   QObject::connect(download_url_reply, &QNetworkReply::finished, [this, handler, download_url_reply] {
     if (download_url_reply->bytesAvailable() == 0) {
@@ -160,7 +161,7 @@ void YaDRestApi::handleError(QNetworkReply *reply) {
   }
 }
 
-void YaDRestApi::handleConfigChange(QSettings *new_config) {
+void YaDRestApi::handleConfigChange() {
   qDebug() << "yad_conf_change_handler\n";
   loadConfigVariables();
 }

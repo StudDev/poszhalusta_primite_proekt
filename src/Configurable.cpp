@@ -17,9 +17,9 @@ Configurable::Configurable(QObject *parent)
       _loader{nullptr} {
 }
 
-void Configurable::changeConfigSlot(QSettings *new_config) {
-  if (getConfig() != new_config) {
-    handleConfigChange(new_config);
+void Configurable::changeConfigSlot(const QString &changed_branch) {
+  if (getConfigBranch() != changed_branch) {
+    handleConfigChange();
   }
 }
 
@@ -59,12 +59,12 @@ void Configurable::reloadConfig(ConfigLoader *customLoader) {
 
 void Configurable::confSetValue(const QString &key, const QVariant &value) {
   _config->setValue(key, value);
-  emit configChanged(_config);
+  emit configChanged(getConfigBranch());
 }
 
 void Configurable::confRemoveKey(const QString &key) {
   _config->remove(key);
-  emit configChanged(_config);
+  emit configChanged(getConfigBranch());
 }
 
 bool Configurable::confContains(const QString &key) {
@@ -75,6 +75,10 @@ QVariant Configurable::getConfValue(const QString &key, const QVariant &defaultV
   return _config->value(key, defaultValue);
 }
 
-void Configurable::handleConfigChange(QSettings *new_config) {
-  throw std::runtime_error("Configurable::handleConfigChange Called");
+void Configurable::handleConfigChange() {
+  throw std::runtime_error("Configurable::handleConfigChange called");
+}
+
+const QString &Configurable::getConfigBranch() const {
+  return _loader->getConfigBranch();
 }

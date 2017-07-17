@@ -121,6 +121,6 @@ void AuthorizationController::loadConfigVariables() {
 
 }
 
-void AuthorizationController::handleConfigChange(QSettings *new_config) {
+void AuthorizationController::handleConfigChange() {
   qDebug() << "AC conf change handler";
 }

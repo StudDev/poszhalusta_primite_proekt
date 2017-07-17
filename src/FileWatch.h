@@ -38,7 +38,7 @@ public:
   explicit FileWatch(int inotify_descriptor,
                      int control_pipe_descriptor,
                      QHash<int, QString> &hash_by_descriptor,
-                     QThread *parent = nullptr);
+                     QObject *parent = nullptr);
 
   ~FileWatch();
 
@@ -51,6 +51,14 @@ signals:
   void WatchFinished();
 
   void FileWatchError(QString error_description);
+
+  void movedToEvent(unsigned cookie, const QString &name) const;
+
+  void movedFromEvent(unsigned cookie, const QString &name) const;
+
+  void modifiedEvent(const QString &name) const;
+
+  void createdEvent(const QString &name, bool is_directory) const;
 protected:
 
 
@@ -65,6 +73,9 @@ protected:
 
   void Initialize();
   void Uninitialize();
+
+private:
+  QString GetEventStr(const inotify_event &event) const;
 
   QHash<int, QString> &hash_by_descriptor_;
 

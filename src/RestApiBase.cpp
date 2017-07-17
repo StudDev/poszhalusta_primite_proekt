@@ -160,7 +160,7 @@ QNetworkReply *RestApiBase::performRequest(const QNetworkRequest &request,
   }
 }
 
-void RestApiBase::handleConfigChange(QSettings *new_config) {
+void RestApiBase::handleConfigChange() {
   //Do nothing
 }
 

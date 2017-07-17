@@ -33,7 +33,7 @@ public:
   bool isExpired();
 
 protected:
-  void handleConfigChange(QSettings *new_config) override;
+  void handleConfigChange() override;
 
   void loadConfigVariables() override;
 signals:

@@ -11,6 +11,7 @@ class Configurable;
 class ConfigObserver : public QObject {
 Q_OBJECT
 public:
+
   static ConfigObserver *getInstance();
 
   void addConfigHolder(Configurable *config_holder);
@@ -21,16 +22,16 @@ public:
 
 public slots:
 
-  void pushNotification(QSettings *new_config);
+  void pushNotification(const QString &new_config);
 
 signals:
 
-  void notify(QSettings *new_config);
+  void notify(const QString &new_config);
 
 private:
-  static ConfigObserver *_self;
-
   ConfigObserver(QObject *parent = nullptr);
+
+  static ConfigObserver *_self;
 
   QHash<QSettings *, Configurable *> _config_holders;
 };
